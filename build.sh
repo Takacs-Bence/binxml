@@ -2,4 +2,4 @@
 
 set -xe
 
-clang -o binxml main.c -lxml2
+clang -o binxml src/main.c src/schema_validation.c -lxml2

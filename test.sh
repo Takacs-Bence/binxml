@@ -1,3 +1,3 @@
 #!/bin/sh
 
-./binxml "./test/Books.xsd" "./test/Books.xml"
+./binxml "./test/Books.xml" "./test/Books.xsd"
