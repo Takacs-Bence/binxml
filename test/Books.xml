@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Books xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="Books.xsd">
+
+  <Book>
+    <Title>Introduction to XML</Title>
+    <Author>John Doe</Author>
+    <PublicationYear>2022</PublicationYear>
+  </Book>
+
+  <Book>
+    <Title>Programming in Java</Title>
+    <Author>Jane Smith</Author>
+    <PublicationYear>2021</PublicationYear>
+  </Book>
+
+  <Book>
+    <Title>Data Science Essentials</Title>
+    <Author>Alice Johnson</Author>
+    <PublicationYear>2020</PublicationYear>
+  </Book>
+
+</Books>
+
