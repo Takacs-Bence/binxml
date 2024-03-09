@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+
+  <!-- Define Simple Type: GenreType -->
+  <xs:simpleType name="GenreType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Fiction"/>
+      <xs:enumeration value="Non-Fiction"/>
+      <xs:enumeration value="Science Fiction"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Define BookType complex type -->
+  <xs:complexType name="BookType">
+    <xs:sequence>
+      <xs:element name="Title" type="xs:string"/>
+      <xs:element name="Author" type="xs:string"/>
+      <xs:element name="PublicationYear" type="xs:integer"/>
+      <xs:element name="Genre" type="GenreType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Define PublishingCompanyType complex type -->
+  <xs:complexType name="PublishingCompanyType">
+    <xs:sequence>
+      <xs:element name="CompanyName" type="xs:string"/>
+      <xs:element name="Books">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Book" type="BookType" maxOccurs="unbounded"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Define LibraryType complex type -->
+  <xs:complexType name="LibraryType">
+    <xs:sequence>
+      <xs:element name="PublishingCompany" type="PublishingCompanyType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Define Library element containing PublishingCompany elements -->
+  <xs:element name="Library" type="LibraryType"/>
+
+</xs:schema>

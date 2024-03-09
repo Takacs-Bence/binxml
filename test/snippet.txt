@@ -1,0 +1,81 @@
+<xs:complexType name="DerivedType">
+    <xs:complexContent>
+        <xs:extension base="BaseType">
+            <xs:attribute name="additionalAttribute" type="xs:string"/>
+        </xs:extension>
+    </xs:complexContent>
+</xs:complexType>
+
+<xs:complexType name="ExampleType">
+    <xs:simpleContent>
+        <xs:extension base="xs:string">
+            <xs:attribute name="lang" type="xs:language"/>
+        </xs:extension>
+    </xs:simpleContent>
+</xs:complexType>
+
+<xs:complexType name="ExampleType">
+    <xs:sequence>
+        <xs:element name="FirstName" type="xs:string"/>
+        <xs:element name="LastName" type="xs:string"/>
+    </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="ShapeType">
+    <xs:choice>
+        <xs:element name="Circle"/>
+        <xs:element name="Rectangle"/>
+        <xs:element name="Triangle"/>
+    </xs:choice>
+</xs:complexType>
+
+struct _xmlNode {
+    void *	_private	: application data
+    xmlElementType	type	: type number, must be second !
+    const xmlChar *	name	: the name of the node, or the entity
+    struct _xmlNode *	children	: parent->childs link
+    struct _xmlNode *	last	: last child link
+    struct _xmlNode *	parent	: child->parent link
+    struct _xmlNode *	next	: next sibling link
+    struct _xmlNode *	prev	: previous sibling link
+    struct _xmlDoc *	doc	: the containing document End of common part
+    xmlNs *	ns	: pointer to the associated namespace
+    xmlChar *	content	: the content
+    struct _xmlAttr *	properties	: properties list
+    xmlNs *	nsDef	: namespace definitions on this node
+    void *	psvi	: for type/PSVI information
+    unsigned short	line	: line number
+    unsigned short	extra	: extra data for XPath/XSLT
+} xmlNode;
+
+<xs:element name="note">
+  <xs:complexType>
+    <xs:sequence>
+  <xs:element name="to" type="xs:string"/>
+  <xs:element name="from" type="xs:string"/>
+  <xs:element name="heading" type="xs:string"/>
+  <xs:element name="body" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
+
+<xs:element name="employee" type="fullpersoninfo"/>
+
+<xs:complexType name="personinfo">
+  <xs:sequence>
+    <xs:element name="firstname" type="xs:string"/>
+    <xs:element name="lastname" type="xs:string"/>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="fullpersoninfo">
+  <xs:complexContent>
+    <xs:extension base="personinfo">
+      <xs:sequence>
+        <xs:element name="address" type="xs:string"/>
+        <xs:element name="city" type="xs:string"/>
+        <xs:element name="country" type="xs:string"/>
+      </xs:sequence>
+    </xs:extension>
+  </xs:complexContent>
+</xs:complexType>
