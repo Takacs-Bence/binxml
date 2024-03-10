@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include "libxml/parser.h"
 #include "libxml/tree.h"
 #include "source_file_generator.h"
@@ -54,19 +55,72 @@ void generate_type_def_source_files(const char* const xsd_path) {
 	xmlFreeDoc(schema);
 }
 
-ComplexType* new_complex_type(ComplexType* complex_type, char* name, xmlNodePtr first_element) {
-	if (complex_type == NULL) {
-		// create head if it is not initialized yet
-		complex_type = malloc(sizeof(ComplexType));
-		if (complex_type == NULL) {
-			printf("could not allocate memmory for complex type definition");
-			exit(1);
-		}
-		complex_type->name = name;
-		complex_type->is_sequence = 0;
-	} 
+ComplexType* new_complex_type(ComplexType* complex_type, char* name, xmlNodePtr element) {
+	// TODO if the name is NULL generate a name
 
-	return complex_type;
+	// allocate mem for new type
+	ComplexType*  new = malloc(sizeof(ComplexType));
+	if (new== NULL) {
+		printf("could not allocate memmory for complex type definition");
+		exit(1);
+	}
+	// set defaults
+	new->name = name;
+	new->is_sequence = 0;
+
+	// process properties
+	while(element != NULL) {
+		// only want to deal with elements here
+		if (xmlStrcmp(element->name, (const xmlChar*) "element") == 0) {
+			struct _xmlAttr* property = element->properties;
+			while(property != NULL) {
+				// alloc element
+				Element* new_element = malloc(sizeof(Element));
+
+				if (new_element == NULL) {
+					printf("new element could not be allocated. exiting");
+					exit(1);
+				}
+
+				char* name_str;
+				char* type_str;
+				// get the key-value pairs 
+				// there are many optional attributes for an xs:element
+				// the logic here does not take care anything other than name and type attributes
+				// validity of the XML by the schema is checked in schema_validation.h	
+				if (strncmp((char*) property->name, "type", 4) == 0) {
+
+					int length = strlen((char*) property->children->content);
+
+
+				} else if (strncmp((char*) property->name, "name", 4) == 0) {
+
+					int length = strlen((char*) property->children->content);
+					if (length == 0) {
+
+					} else {
+						name_str = malloc(sizeof(strlen((char*) property->children->content) + 1));
+					}
+					strcpy(name_str, (char*) property->children->content);
+					new_element->name = name_str;
+
+
+				}						
+
+				property = property->next;
+			}			
+		}
+
+		element = element->next;	
+	}
+
+	// link the ComplexType-s
+	if (complex_type != NULL) {
+		new->prev = complex_type;
+		complex_type->next = new;
+	}
+
+	return new;
 }
 
 void free_resources(ComplexType* complex_type) {
