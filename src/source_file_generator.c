@@ -82,8 +82,10 @@ ComplexType* new_complex_type(ComplexType* complex_type, char* name, xmlNodePtr 
 					exit(1);
 				}
 
-				char* name_str;
-				char* type_str;
+				char* name_str = NULL;
+				char* type_str = NULL;
+				char is_type_set = 0;
+				char is_name_set = 0;
 				// get the key-value pairs 
 				// there are many optional attributes for an xs:element
 				// the logic here does not take care anything other than name and type attributes
@@ -91,6 +93,16 @@ ComplexType* new_complex_type(ComplexType* complex_type, char* name, xmlNodePtr 
 				if (strncmp((char*) property->name, "type", 4) == 0) {
 
 					int length = strlen((char*) property->children->content);
+					if (length == 0) {
+
+					} else if (strncmp((char*) property->children->content, "xs:string", strlen("xs:string")) == 0) {
+						new_element->type = STRING;
+					} else if (strncmp((char*) property->children->content, "xs:integer", strlen("xs:integer")) == 0) {
+						new_element->type = INTEGER;
+					} else {
+						printf("unhadled element type came up: %s", (char*) property->children->content);
+						// TODO handle references to other complex types - or maintain a registry
+					}
 
 
 				} else if (strncmp((char*) property->name, "name", 4) == 0) {
@@ -106,6 +118,24 @@ ComplexType* new_complex_type(ComplexType* complex_type, char* name, xmlNodePtr 
 
 
 				}						
+
+				if (!is_type_set) {
+					// if we have no type attr on the element, lets use the default type, which is string
+					// we set this first before name, because we might need it for generating the name
+					type_str = malloc(sizeof(strlen("xs:string") + 1));
+					if (type_str == NULL) {
+						printf("error allocating memory for default element type");
+						exit(1);
+					}						
+				}	
+				if (!is_name_set) {
+					// we set this first before name, because we might need it for generating the name
+					name_str = malloc(sizeof(strlen("xs:string") + 1));
+					if (name_str == NULL) {
+						printf("error allocating memory for default element name");
+						exit(1);
+					}						
+				}	
 
 				property = property->next;
 			}			
