@@ -107,32 +107,29 @@ ComplexType* new_complex_type(ComplexType* complex_type, char* name, xmlNodePtr 
 		if (xmlStrcmp(element->name, (const xmlChar*) "element") == 0) {
 			struct _xmlAttr* property = element->properties;
 
-			while(property != NULL) {
+			// resize the element array if full 
+			if (element_count >= elements_arr_size) {
+				elements_arr_size = elements_arr_size * 2;
+				Element* new_elements = realloc(elements, elements_arr_size * sizeof(Element));
 
-				// resize the element array if full 
-				if (element_count >= elements_arr_size) {
-					elements_arr_size = elements_arr_size * 2;
-					Element* new_elements = realloc(elements, elements_arr_size * sizeof(Element));
+				// have to update the pointer in the ComplexType because it was reassigned
+				new_type->elements = new_elements;				
+				elements = new_elements;
 
-					// initialize element default values
-					//for (size_t i = 0; i < elements_arr_size; ++i) {
-					//	new_elements[i].name = NULL;
-					//	new_elements[i].type = NULL;
-					//}
-
-					// have to update the pointer in the ComplexType because it was reassigned
-					new_type->elements = new_elements;				
-					elements = new_elements;
-
-					if (elements == NULL) {
-						printf("could not allocate for elements");
-						exit(1);
-					}
+				if (elements == NULL) {
+					printf("could not allocate for elements");
+					exit(1);
 				}
+			}
 
-				// get the new element pointer and increment count
-				element_count++;
-				Element* new_element = &elements[element_count - 1];	
+			// get the new element pointer and increment count
+			element_count++;
+			Element* new_element = &elements[element_count - 1];	
+
+			// a property represents an attribute
+			// property->name will be the name of the attribute
+			// property->children->content will be the value of the attr
+			while(property != NULL) {
 
 				/* get the key-value pairs 
 				 * there are many optional attributes for an xs:element
@@ -181,7 +178,15 @@ void output_type_defs(ComplexType* complex_type) {
 	ComplexType* ct = complex_type;
 	while (ct != NULL) {	
 		printf("starting to print with: %s\n", ct->name);
-		ct= ct->next;
+		printf("this complex type has %zu elements\n", ct->element_count);
+
+		for (size_t i = 0; i < ct->element_count; ++i) {
+			Element element = ct->elements[i];
+			printf("\t element name: %s  element type %s\n", element.name, element.type);
+		}	
+
+		// have to go backwards, because we are getting the tail of the type array
+		ct = ct->prev;
 	}
 }
 
@@ -189,7 +194,7 @@ void output_type_defs(ComplexType* complex_type) {
 void free_resources(ComplexType* complex_type) {
 	while(complex_type != NULL) {
 		printf("freeing complex_tye 0x%p\n", complex_type);
-		ComplexType* next = complex_type->next;
+		ComplexType* next = complex_type->prev;
 		Element* elements = complex_type->elements;
 		for (size_t count = 0; count < complex_type->element_count; count++) {
 			free(elements[count].name);
