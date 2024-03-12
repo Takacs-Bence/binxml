@@ -3,14 +3,9 @@
 
 #include "libxml/tree.h"
 
-typedef enum {
-	STRING,
-	INTEGER
-} ElementType;
-
 typedef struct {
-	char* name;
-	ElementType type;
+	char* name; 			// name="MyElementType"
+	char* type;				// type-"xs:string" or xs:integer or complex/simpleType reference
 } Element;
 
 typedef struct ComplexType {

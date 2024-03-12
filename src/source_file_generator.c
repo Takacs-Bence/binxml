@@ -4,7 +4,6 @@
 #include "libxml/parser.h"
 #include "libxml/tree.h"
 #include "source_file_generator.h"
-#include "util.h"
 
 void generate_type_def_source_files(const char* const xsd_path) {
 	xmlDocPtr schema;
@@ -28,7 +27,6 @@ void generate_type_def_source_files(const char* const xsd_path) {
 	}
 
 	// Starting from the root level, search for the type definitions
-	// These can be found one level below of the root
 	// Only complexType is supported (so not simpleType or simpleContent or complexContent
 	for (node = root->children; node != NULL; node = node->next) {
 		// if the current node is a complexType then process it
@@ -49,7 +47,6 @@ void generate_type_def_source_files(const char* const xsd_path) {
 		} else if  (xmlStrcmp(node->name, (const xmlChar*)"element") == 0) {
 			// TODO check wether or not we have types inside of the element, process if we do
 		}
-
 	}
 
 	printf("let see if we have complex_type saved, address: 0x%p\n", complex_type);
@@ -58,20 +55,29 @@ void generate_type_def_source_files(const char* const xsd_path) {
 }
 
 ComplexType* new_complex_type(ComplexType* complex_type, char* name, xmlNodePtr element) {
-	// TODO if the name is NULL generate a name
 
 	// allocate mem for new type
-	ComplexType*  new = malloc(sizeof(ComplexType));
-	if (new== NULL) {
+	ComplexType* new_type = malloc(sizeof(ComplexType));
+	if (new_type == NULL) {
 		printf("could not allocate memmory for complex type definition");
 		exit(1);
 	}
 	// set defaults
-	new->name = name;
-	new->is_sequence = 0;
+	new_type->name = NULL;
+	new_type->is_sequence = 0;
+	new_type->element_count = 0;
+	new_type->elements = NULL;
+	new_type->next = NULL;
+	new_type->prev = NULL;
 
-	// create a list to hold  possible type references
-	StringList* list = new_string_list();	
+	// set the name
+	// HINT: if the name would be not set, here is the place to generate one
+	new_type->name = malloc(sizeof(name));
+	if (new_type->name == NULL) {
+		printf("allocating complextype name was not successful");
+		exit(1);
+	}	
+	strncpy(new_type->name, name, strlen(name));
 
 	// process properties
 	while(element != NULL) {
@@ -81,68 +87,37 @@ ComplexType* new_complex_type(ComplexType* complex_type, char* name, xmlNodePtr 
 			while(property != NULL) {
 				// alloc element
 				Element* new_element = malloc(sizeof(Element));
+				new_element->name = NULL;
+				new_element->type = NULL;				
 
 				if (new_element == NULL) {
 					printf("new element could not be allocated. exiting");
 					exit(1);
 				}
 
-				char* name_str = NULL;
-				char* type_str = NULL;
-				char is_type_set = 0;
-				char is_name_set = 0;
-				// get the key-value pairs 
-				// there are many optional attributes for an xs:element
-				// the logic here does not take care anything other than name and type attributes
-				// validity of the XML by the schema is checked in schema_validation.h	
+				/* get the key-value pairs 
+				 * there are many optional attributes for an xs:element
+				 * the logic here does not take care anything other than name and type attributes
+				 * validity of the XML by the schema is checked in schema_validation.h */	
+
+				/* HINT: this would be the place to put type/name generating logic,
+				 * when those attributes are missing */
 				if (strncmp((char*) property->name, "type", 4) == 0) {
-
-					char* type_value = (char*) property->children->content;
-					int length = strlen(type_value);
-					if (length == 0) {
-
-					} else if (strncmp(type_value, "xs:string", strlen("xs:string")) == 0) {
-						new_element->type = STRING;
-					} else if (strncmp(type_value, "xs:integer", strlen("xs:integer")) == 0) {
-						new_element->type = INTEGER;
-					} else {
-						// maintain registry for type references
-						append(list, type_value, length);	
-
+					new_element->type = malloc(sizeof(strlen((char*) property->children->content) + 1));
+					if (new_element->type == NULL) {
+						printf("could not allocate for type_str");
+						exit(1);
 					}
-
+					strcpy(new_element->type, (char*) property->children->content);
 
 				} else if (strncmp((char*) property->name, "name", 4) == 0) {
-
-					int length = strlen((char*) property->children->content);
-					if (length == 0) {
-
-					} else {
-						name_str = malloc(sizeof(strlen((char*) property->children->content) + 1));
+					new_element->name = malloc(sizeof(strlen((char*) property->children->content) + 1));
+					if (new_element->name == NULL) {
+						printf("could not allocate for type_str");
+						exit(1);
 					}
-					strcpy(name_str, (char*) property->children->content);
-					new_element->name = name_str;
-
-
+					strcpy(new_element->name, (char*) property->children->content);
 				}						
-
-				if (!is_type_set) {
-					// if we have no type attr on the element, lets use the default type, which is string
-					// we set this first before name, because we might need it for generating the name
-					type_str = malloc(sizeof(strlen("xs:string") + 1));
-					if (type_str == NULL) {
-						printf("error allocating memory for default element type");
-						exit(1);
-					}						
-				}	
-				if (!is_name_set) {
-					// we set this first before name, because we might need it for generating the name
-					name_str = malloc(sizeof(strlen("xs:string") + 1));
-					if (name_str == NULL) {
-						printf("error allocating memory for default element name");
-						exit(1);
-					}						
-				}	
 
 				property = property->next;
 			}			
@@ -151,16 +126,13 @@ ComplexType* new_complex_type(ComplexType* complex_type, char* name, xmlNodePtr 
 		element = element->next;	
 	}
 
-	//TODO process the complex type registry
-	free_list(list);
-
-	// link the ComplexType-s
+	// link the Complextype-s
 	if (complex_type != NULL) {
-		new->prev = complex_type;
-		complex_type->next = new;
+		new_type->prev = complex_type;
+		complex_type->next = new_type;
 	}
 
-	return new;
+	return new_type;
 }
 
 void free_resources(ComplexType* complex_type) {
@@ -170,10 +142,21 @@ void free_resources(ComplexType* complex_type) {
 		Element* elements = complex_type->elements;
 		for (size_t count = 0; count < complex_type->element_count; count++) {
 			free(elements[count].name);
+			free(elements[count].type);
 		}
 		free(elements);
+		complex_type->element_count = 0;
+		complex_type->is_sequence = 0;
+		complex_type->elements = NULL;
+
+		free(complex_type->name);
+		complex_type->name = NULL;
+
+		complex_type->prev = NULL;
+		complex_type->next = NULL;
 		free(complex_type);
 
 		complex_type = next;
 	}
 }
+
