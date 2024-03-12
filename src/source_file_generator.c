@@ -32,13 +32,24 @@ void generate_type_def_source_files(const char* const xsd_path) {
 		// if the current node is a complexType then process it
 		if (xmlStrcmp(node->name, (const xmlChar*)"complexType") == 0) {
 			xmlNode* child = node->children;
+
 			while (child != NULL)  {
 				// there are junk lines that are not relevant, here we are trying to target xs:sequence and similar
 				if (child->type == XML_ELEMENT_NODE || child->type == XML_ENTITY_NODE) {
-					printf("name: %s content: %s line:%d\n", child->name, child->content, child->line);
-					// get a pointer to the first element
+
+					xmlChar* name_value = xmlGetProp(node, (const xmlChar*)"name");
+
+					if (name_value != NULL) {
+						printf("Complex Type Name: %s\n", name_value);
+
+					} else {
+						printf("Complex Type is anonym. Exiting program, it is not yet implemented \n");
+						exit(1);
+					}
+
 					xmlNode* first_element = child->children;
-					complex_type = new_complex_type(complex_type, (char*) node->name, first_element);
+					complex_type = new_complex_type(complex_type, (char*) name_value, child->children);
+					xmlFree(name_value);
 				}
 				child = child->next;
 			}
@@ -49,7 +60,6 @@ void generate_type_def_source_files(const char* const xsd_path) {
 		}
 	}
 
-	printf("let see if we have complex_type saved, address: 0x%p\n", complex_type);
 	output_type_defs(complex_type);
 
 	free_resources(complex_type);
