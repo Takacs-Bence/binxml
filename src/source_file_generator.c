@@ -1,8 +1,10 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "libxml/parser.h"
 #include "libxml/tree.h"
 #include "source_file_generator.h"
+#include "util.h"
 
 void generate_type_def_source_files(const char* const xsd_path) {
 	xmlDocPtr schema;
@@ -68,6 +70,9 @@ ComplexType* new_complex_type(ComplexType* complex_type, char* name, xmlNodePtr 
 	new->name = name;
 	new->is_sequence = 0;
 
+	// create a list to hold  possible type references
+	StringList* list = new_string_list();	
+
 	// process properties
 	while(element != NULL) {
 		// only want to deal with elements here
@@ -92,16 +97,18 @@ ComplexType* new_complex_type(ComplexType* complex_type, char* name, xmlNodePtr 
 				// validity of the XML by the schema is checked in schema_validation.h	
 				if (strncmp((char*) property->name, "type", 4) == 0) {
 
-					int length = strlen((char*) property->children->content);
+					char* type_value = (char*) property->children->content;
+					int length = strlen(type_value);
 					if (length == 0) {
 
-					} else if (strncmp((char*) property->children->content, "xs:string", strlen("xs:string")) == 0) {
+					} else if (strncmp(type_value, "xs:string", strlen("xs:string")) == 0) {
 						new_element->type = STRING;
-					} else if (strncmp((char*) property->children->content, "xs:integer", strlen("xs:integer")) == 0) {
+					} else if (strncmp(type_value, "xs:integer", strlen("xs:integer")) == 0) {
 						new_element->type = INTEGER;
 					} else {
-						printf("unhadled element type came up: %s", (char*) property->children->content);
-						// TODO handle references to other complex types - or maintain a registry
+						// maintain registry for type references
+						append(list, type_value, length);	
+
 					}
 
 
@@ -143,6 +150,9 @@ ComplexType* new_complex_type(ComplexType* complex_type, char* name, xmlNodePtr 
 
 		element = element->next;	
 	}
+
+	//TODO process the complex type registry
+	free_list(list);
 
 	// link the ComplexType-s
 	if (complex_type != NULL) {

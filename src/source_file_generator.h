@@ -1,5 +1,6 @@
-#include <stdio.h>
-#include "libxml/parser.h"
+#ifndef SOURCE_FILE_GENERATOR_H
+#define SOURCE_FILE_GENERATOR_H
+
 #include "libxml/tree.h"
 
 typedef enum {
@@ -33,3 +34,5 @@ ComplexType* new_complex_type(ComplexType* complex_type, char* name, xmlNodePtr 
 void generate_type_def_source_files(const char* const xsd_path);
 
 void free_resources(ComplexType* complex_type);
+
+#endif // SOURCE_FILE_GENERATOR_H
