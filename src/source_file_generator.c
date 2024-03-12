@@ -50,6 +50,8 @@ void generate_type_def_source_files(const char* const xsd_path) {
 	}
 
 	printf("let see if we have complex_type saved, address: 0x%p\n", complex_type);
+	output_type_defs(complex_type);
+
 	free_resources(complex_type);
 	xmlFreeDoc(schema);
 }
@@ -72,28 +74,65 @@ ComplexType* new_complex_type(ComplexType* complex_type, char* name, xmlNodePtr 
 
 	// set the name
 	// HINT: if the name would be not set, here is the place to generate one
-	new_type->name = malloc(sizeof(name));
+	new_type->name = malloc(strlen(name) + 1);
 	if (new_type->name == NULL) {
 		printf("allocating complextype name was not successful");
 		exit(1);
-	}	
+	}
 	strncpy(new_type->name, name, strlen(name));
+
+	//create a dyanmic array for elements
+	size_t element_count = 0;
+	size_t elements_arr_size = ELEMENTS_INITIAL_CAPACITY;
+	Element* elements = malloc(sizeof(Element) * elements_arr_size);
+
+	new_type->elements = elements;
+
+	if (elements == NULL) {
+		printf("could not allocate for elements");
+		exit(1);
+	}
+
+	// initialize element default values
+	for (size_t i = 0; i < elements_arr_size; ++i) {
+		elements[i].name = NULL;
+		elements[i].type = NULL;
+	}
 
 	// process properties
 	while(element != NULL) {
+
+
 		// only want to deal with elements here
 		if (xmlStrcmp(element->name, (const xmlChar*) "element") == 0) {
 			struct _xmlAttr* property = element->properties;
-			while(property != NULL) {
-				// alloc element
-				Element* new_element = malloc(sizeof(Element));
-				new_element->name = NULL;
-				new_element->type = NULL;				
 
-				if (new_element == NULL) {
-					printf("new element could not be allocated. exiting");
-					exit(1);
+			while(property != NULL) {
+
+				// resize the element array if full 
+				if (element_count >= elements_arr_size) {
+					elements_arr_size = elements_arr_size * 2;
+					Element* new_elements = realloc(elements, elements_arr_size * sizeof(Element));
+
+					// initialize element default values
+					//for (size_t i = 0; i < elements_arr_size; ++i) {
+					//	new_elements[i].name = NULL;
+					//	new_elements[i].type = NULL;
+					//}
+
+					// have to update the pointer in the ComplexType because it was reassigned
+					new_type->elements = new_elements;				
+					elements = new_elements;
+
+					if (elements == NULL) {
+						printf("could not allocate for elements");
+						exit(1);
+					}
 				}
+
+				// get the new element pointer and increment count
+				element_count++;
+				Element* new_element = &elements[element_count - 1];	
 
 				/* get the key-value pairs 
 				 * there are many optional attributes for an xs:element
@@ -103,7 +142,7 @@ ComplexType* new_complex_type(ComplexType* complex_type, char* name, xmlNodePtr 
 				/* HINT: this would be the place to put type/name generating logic,
 				 * when those attributes are missing */
 				if (strncmp((char*) property->name, "type", 4) == 0) {
-					new_element->type = malloc(sizeof(strlen((char*) property->children->content) + 1));
+					new_element->type = malloc(strlen((char*) property->children->content) + 1);
 					if (new_element->type == NULL) {
 						printf("could not allocate for type_str");
 						exit(1);
@@ -111,7 +150,7 @@ ComplexType* new_complex_type(ComplexType* complex_type, char* name, xmlNodePtr 
 					strcpy(new_element->type, (char*) property->children->content);
 
 				} else if (strncmp((char*) property->name, "name", 4) == 0) {
-					new_element->name = malloc(sizeof(strlen((char*) property->children->content) + 1));
+					new_element->name = malloc(strlen((char*) property->children->content) + 1);
 					if (new_element->name == NULL) {
 						printf("could not allocate for type_str");
 						exit(1);
@@ -122,9 +161,12 @@ ComplexType* new_complex_type(ComplexType* complex_type, char* name, xmlNodePtr 
 				property = property->next;
 			}			
 		}
+		new_type->element_count = element_count; 
 
 		element = element->next;	
 	}
+
+
 
 	// link the Complextype-s
 	if (complex_type != NULL) {
@@ -135,6 +177,15 @@ ComplexType* new_complex_type(ComplexType* complex_type, char* name, xmlNodePtr 
 	return new_type;
 }
 
+void output_type_defs(ComplexType* complex_type) {
+	ComplexType* ct = complex_type;
+	while (ct != NULL) {	
+		printf("starting to print with: %s\n", ct->name);
+		ct= ct->next;
+	}
+}
+
+
 void free_resources(ComplexType* complex_type) {
 	while(complex_type != NULL) {
 		printf("freeing complex_tye 0x%p\n", complex_type);
@@ -144,7 +195,7 @@ void free_resources(ComplexType* complex_type) {
 			free(elements[count].name);
 			free(elements[count].type);
 		}
-		free(elements);
+		free(complex_type->elements);
 		complex_type->element_count = 0;
 		complex_type->is_sequence = 0;
 		complex_type->elements = NULL;

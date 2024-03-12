@@ -3,6 +3,8 @@
 
 #include "libxml/tree.h"
 
+#define ELEMENTS_INITIAL_CAPACITY 5 
+
 typedef struct {
 	char* name; 			// name="MyElementType"
 	char* type;				// type-"xs:string" or xs:integer or complex/simpleType reference
@@ -27,6 +29,8 @@ typedef struct ComplexType {
 ComplexType* new_complex_type(ComplexType* complex_type, char* name, xmlNodePtr first_element);
 
 void generate_type_def_source_files(const char* const xsd_path);
+
+void output_type_defs(ComplexType* complexType);
 
 void free_resources(ComplexType* complex_type);
 
