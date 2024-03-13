@@ -26,8 +26,8 @@ void generate_type_def_source_files(const char* const xsd_path) {
 		return;
 	}
 
-	// Starting from the root level, search for the type definitions
-	// Only complexType is supported (so not simpleType or simpleContent or complexContent
+	// Children nodes of root with no recursive search are being screened for type defs
+	// Only complexType and simpleType are supported (not simpleContent or complexContent)
 	for (node = root->children; node != NULL; node = node->next) {
 		// if the current node is a complexType then process it
 		if (xmlStrcmp(node->name, (const xmlChar*)"complexType") == 0) {
@@ -119,6 +119,8 @@ ComplexType* new_complex_type(ComplexType* complex_type, char* name, xmlNodePtr 
 
 			// resize the element array if full 
 			if (element_count >= elements_arr_size) {
+				// double the size and reallocate memory
+				size_t old_size = elements_arr_size;
 				elements_arr_size = elements_arr_size * 2;
 				Element* new_elements = realloc(elements, elements_arr_size * sizeof(Element));
 
@@ -129,6 +131,12 @@ ComplexType* new_complex_type(ComplexType* complex_type, char* name, xmlNodePtr 
 				if (elements == NULL) {
 					printf("could not allocate for elements");
 					exit(1);
+				}
+
+				// set defaults for newly allocated memory slots
+				for (size_t i = old_size; i < elements_arr_size; ++i) {
+					elements[i].name = NULL;
+					elements[i].type = NULL;
 				}
 			}
 
@@ -167,7 +175,44 @@ ComplexType* new_complex_type(ComplexType* complex_type, char* name, xmlNodePtr 
 
 				property = property->next;
 			}			
-		}
+			// if the name is not empty but the type is
+			// checking if it is a default type, or there is a complexType underneath
+			if (new_element->name != NULL && new_element->type == NULL) {
+				// get children 
+				xmlNodePtr embedded = element->children;
+				if (embedded == NULL) {
+					// default type, nothing embedded here
+					new_element->type = malloc(strlen("xs:string") + 1);
+					if (new_element->type == NULL) {
+						printf("could not allocate string for default type");
+						exit(1);
+					}
+					strcpy(new_element->type, "xs:string");
+				} else {
+					// there is another complex type embedded here
+					// TODO before making this work, rework the new_complex_type method,
+					// so it starts from the xs:complexType element
+					//complex_type = new_complex_type(complex_type, new_element->name, embedded);	
+				}
+
+				/*				printf("element children no type is %s\n", no_type_child->name);
+			
+				xmlNode* embed_type = NULL;	
+				while(no_type_child != NULL) {
+					if (no_type_child->type == XML_ELEMENT_NODE) {
+						
+					}
+
+					
+
+					no_type_child = no_type_child->next;
+				}
+				if (xmlStrcmp(no_type_child->name, (const xmlChar*) "element") == 0) {
+					printf("log element found in no type");					
+						
+				} */
+			}
+	}	
 		new_type->element_count = element_count; 
 
 		element = element->next;	
@@ -203,7 +248,6 @@ void output_type_defs(ComplexType* complex_type) {
 
 void free_resources(ComplexType* complex_type) {
 	while(complex_type != NULL) {
-		printf("freeing complex_tye 0x%p\n", complex_type);
 		ComplexType* next = complex_type->prev;
 		Element* elements = complex_type->elements;
 		for (size_t count = 0; count < complex_type->element_count; count++) {

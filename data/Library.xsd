@@ -13,6 +13,7 @@
   <!-- Define BookType complex type -->
   <xs:complexType name="BookType">
     <xs:sequence>
+      <xs:element name="Empty" minOccurs="0"/>
       <xs:element name="Title" type="xs:string"/>
       <xs:element name="Author" type="xs:string"/>
       <xs:element name="PublicationYear" type="xs:integer"/>

@@ -79,3 +79,51 @@ struct _xmlNode {
     </xs:extension>
   </xs:complexContent>
 </xs:complexType>
+
+
+struct _xmlAttr {
+    void *	_private	: application data
+    xmlElementType	type	: XML_ATTRIBUTE_NODE, must be second !
+    const xmlChar *	name	: the name of the property
+    struct _xmlNode *	children	: the value of the property
+    struct _xmlNode *	last	: NULL
+    struct _xmlNode *	parent	: child->parent link
+    struct _xmlAttr *	next	: next sibling link
+    struct _xmlAttr *	prev	: previous sibling link
+    struct _xmlDoc *	doc	: the containing document
+    xmlNs *	ns	: pointer to the associated namespace
+    xmlAttributeType	atype	: the attribute type if validating
+    void *	psvi	: for type/PSVI information
+} xmlAttr;
+
+<xs:element name="person">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element name="firstname" type="xs:string"/>
+      <xs:element name="lastname" type="xs:string"/>
+      <xs:any minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
+
+Order indicators:
+
+All
+Choice
+Sequence
+
+
+<xs:element name="product">
+  <xs:complexType>
+    <xs:attribute name="prodid" type="xs:positiveInteger"/>
+  </xs:complexType>
+</xs:element>
+
+<xs:element name="product" type="prodtype"/>
+
+<xs:complexType name="prodtype">
+  <xs:attribute name="prodid" type="xs:positiveInteger"/>
+</xs:complexType>
+
+XSD Substitution
+simpleContent, complexContent, extension
