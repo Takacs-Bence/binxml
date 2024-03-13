@@ -20,4 +20,4 @@ On a Unix-based system, run ./build.sh and ./run.sh
 
 ## Dependencies
 
-The project relies heavily on xmllib2 for XML and schema parsing/validation.
+The project relies heavily on libxml2 for XML and schema parsing/validation.

@@ -12,7 +12,6 @@ typedef struct {
 
 typedef struct ComplexType {
 	char* name;                 // name attribute of complexType e.g. <xs:complexType name="ExampleType">
-	signed char is_sequence;    // 0 if the second level of the complexType is an xs:sequence element
 	Element* elements;
 	size_t element_count;
 	struct ComplexType* next;           // linked list to get next type to process
@@ -20,13 +19,14 @@ typedef struct ComplexType {
 } ComplexType;
 
 // complex_type - last element of the types linked list
-// name - name of the type, can be NULL - then a name will be generated
-// first_element - pointer to the elements that going to be fields
+// name - only give name, if the complexType is buried under an element
+// - then it is likely it won't have a 'name' property and the param will be helpful generating the name
+// complex_element - the complexType node 
 // 
-// creates ComplexType from the params at hand
+// recursively creates as many ComplexTypes as the element has, including embedded types 
 //
-// returns pointer to the newly created ComplexType
-ComplexType* new_complex_type(ComplexType* complex_type, char* name, xmlNodePtr first_element);
+// returns the last created ComplexType
+ComplexType* new_complex_type(ComplexType* complex_type, const char* const name, xmlNodePtr complex_element);
 
 void generate_type_def_source_files(const char* const xsd_path);
 
