@@ -12,7 +12,7 @@ On a Unix-based system, run ./build.sh and ./run.sh
 ## Scopes
 
 [X] Optional schema validation <br>
-[ wip ] Translate XSD (with limitations, more info later) to C types <br>
+[X] Translate XSD (with limitations) to C types <br>
 [ ] Generate C files <br>
 [ ] Marshall XML data to C <br> 
 [ ] Serialize file as from memory to .bin <br>
@@ -21,3 +21,42 @@ On a Unix-based system, run ./build.sh and ./run.sh
 ## Dependencies
 
 The project relies heavily on libxml2 for XML and schema parsing/validation.
+
+
+## Usage
+
+There are some test XML and connected schema in the /data dir. <br>
+E.g. Library.xsd contains no simpleTypes, no simple/complexContent or any types.<br>
+<br>
+Basically complexTypes, nested anonym complexTypes in elements are supported at this point.<br>
+
+Running the ./run script this schema will be validated (optional with flag) and parsed. <br>
+
+Example output: <br>
+
+'''
+XML is valid against the schema!
+LibraryType complex type has 1 elements
+element name: PublishingCompany  element type PublishingCompanyType
+PublishingCompanyType complex type has 2 elements
+element name: CompanyName  element type xs:string
+element name: Books  element type ComplexType\_Books
+ComplexType\_Books complex type has 1 elements
+element name: Book  element type BookType
+BookType complex type has 5 elements
+element name: Empty  element type xs:string
+element name: Title  element type xs:string
+element name: Author  element type xs:string
+element name: PublicationYear  element type xs:integer
+element name: Genre  element type xs:string
+'''
+
+
+If I make a deliberate mistake in the XML - e.g. add not supported simpleType; <br>
+Then I get an error for the validity of the XML with the error description.  <br>
+
+'''
+./data/Library.xsd:21: element element: Schemas parser error : element decl. 'Genre', attribute 'type': The QName value 'GenreType' does not resolve to a(n) type definition.
+Failed to parse XSD schema.
+XML is not valid against the schema.
+'''
