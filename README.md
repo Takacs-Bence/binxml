@@ -34,7 +34,7 @@ Running the ./run script this schema will be validated (optional with flag) and 
 
 Example output: <br>
 
-'''
+```
 XML is valid against the schema!
 LibraryType complex type has 1 elements
 element name: PublishingCompany  element type PublishingCompanyType
@@ -49,14 +49,14 @@ element name: Title  element type xs:string
 element name: Author  element type xs:string
 element name: PublicationYear  element type xs:integer
 element name: Genre  element type xs:string
-'''
+```
 
 
 If I make a deliberate mistake in the XML - e.g. add not supported simpleType; <br>
 Then I get an error for the validity of the XML with the error description.  <br>
 
-'''
+```
 ./data/Library.xsd:21: element element: Schemas parser error : element decl. 'Genre', attribute 'type': The QName value 'GenreType' does not resolve to a(n) type definition.
 Failed to parse XSD schema.
 XML is not valid against the schema.
-'''
+```
