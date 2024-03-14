@@ -38,13 +38,16 @@ void generate_type_def_source_files(const char* const xsd_path) {
 			complex_type = new_complex_type(complex_type, NULL, node);
 			// an element which can contain a complex type that only belongs to this element
 		} else if  (xmlStrcmp(node->name, (const xmlChar*)"element") == 0) {
-			// this should be the complex type
+			// there should be a complex type among the children
 			xmlNode* child = node->children;
 
-			// find the complexType
-			// TODO and pass the element name for further processing
 			while (child != NULL) {
-				printf("%s\n", child->name);
+				// there are some extra 'text' elements, but find the complex type
+				if (xmlStrcmp(child->name, (const xmlChar*)"complexType") == 0) {
+					// complexType found, recursively append this type to the type defs
+					complex_type = new_complex_type(complex_type, (char*) node->name, child);	
+				}
+				child = child->next;
 			}
 		}
 	}
@@ -214,11 +217,23 @@ ComplexType* new_complex_type(ComplexType* complex_type, const char* const name,
 							}
 							strcpy(new_element->type, "xs:string");
 						} else {
-							// there is another complex type embedded here
-							// TODO before making this work, rework the new_complex_type method,
-							// so it starts from the xs:complexType element
-							//complex_type = new_complex_type(complex_type, new_element->name, embedded);	
-							printf("embedded element %s\n", embedded->name);
+							// there are some extra 'text' elements, but find the complex type
+							while (embedded != NULL) {
+
+								if (xmlStrcmp(embedded->name, (const xmlChar*)"complexType") == 0) {
+									// complexType found, recursively append this type to the type defs
+									complex_type = new_complex_type(complex_type, new_element->name, embedded);	
+									// get the type from the newly appended complex type
+									new_element->type = malloc(strlen(complex_type->name + 1));
+									if (new_element->type == NULL) {
+										printf("could not allocate string for element type");
+										exit(1);
+									}
+									strcpy(new_element->type, complex_type->name);
+								}
+
+								embedded = embedded->next;
+							}
 						}
 					}
 				}	
