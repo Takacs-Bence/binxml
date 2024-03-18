@@ -13,8 +13,7 @@ On a Unix-based system, run ./build.sh and ./run.sh
 
 [X] Optional schema validation <br>
 [X] Translate XSD (with limitations) to C types <br>
-[ ] Generate C files <br>
-[ ] Marshall XML data to C <br> 
+[X] Generate C files <br>
 [ ] Serialize file as from memory to .bin <br>
 [ ] Deserialize file from .bin back to XML <br>
 
@@ -36,7 +35,12 @@ Example output: <br>
 
 ```
 XML is valid against the schema!
+C header file has been generated with the schema types at ./target/generated/Library_types.h
+```
 
+The content then of the header file is: <br>
+
+```
 typedef struct {
 	size_t PublishingCompanyType_count;
 	PublishingCompanyType* PublishingCompany;
@@ -61,7 +65,6 @@ typedef struct {
 	char* Genre;
 } BookType;
 ```
-
 
 If I make a deliberate mistake in the XML - e.g. add not supported simpleType; <br>
 Then I get an error for the validity of the XML with the error description.  <br>
