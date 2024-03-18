@@ -52,7 +52,7 @@ void generate_type_def_source_files(const char* const xsd_path) {
 		}
 	}
 
-	output_type_defs(complex_type);
+	output_type_defs(complex_type, stdout);
 
 	free_resources(complex_type);
 	xmlFreeDoc(schema);
@@ -259,17 +259,22 @@ ComplexType* new_complex_type(ComplexType* complex_type, const char* const name,
 	return new_type;
 }
 
-void output_type_defs(ComplexType* complex_type) {
+void output_type_defs(ComplexType* complex_type, FILE* output) {
+	if (output == NULL) {
+		printf("output file does not exist\n");
+		exit(1);		
+	}
+
 	ComplexType* ct = complex_type;
 	while (ct != NULL) {	
 
-		printf("typedef struct {\n");
+		fprintf(output, "typedef struct {\n");
 
 		for (size_t i = 0; i < ct->element_count; ++i) {
 			Element element = ct->elements[i];
 
 			char* type;
-			
+
 			// handle predefined xsd types
 			if (strcmp(element.type, "xs:string") == 0) {
 				type = "char*";
@@ -288,7 +293,7 @@ void output_type_defs(ComplexType* complex_type) {
 			if (type != NULL) {
 
 				// print predefined
-				printf("\t%s %s;\n", type, element.name);
+				fprintf(output, "\t%s %s;\n", type, element.name);
 
 			} else {
 				// handle complex types
@@ -301,20 +306,20 @@ void output_type_defs(ComplexType* complex_type) {
 				strcpy(count_str, element.type);
 				strlcat(count_str, count_suffix, type_len);
 				// the size element count will be determined on the actual XML data
-				printf("\tsize_t %s\n", count_str);
+				fprintf(output, "\tsize_t %s\n", count_str);
 
 				// add the pointer type derived from complex type
 				char type_suffix[2] = "*";
-				type_len = 1 + element_type_len + 1;			
+				type_len = strlen(type_suffix) + element_type_len + 1;			
 				char type_val[type_len];
 				strncpy(type_val, element.type, type_len);
 				strlcat(type_val, type_suffix, type_len);
 
-				printf("\t%s %s;\n", type_val, element.name);	
+				fprintf(output, "\t%s %s;\n", type_val, element.name);	
 			}
 		}	
 
-		printf("} %s;\n\n", ct->name);
+		fprintf(output, "} %s;\n\n", ct->name);
 
 		ct = ct->prev;
 	}

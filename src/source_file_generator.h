@@ -30,7 +30,7 @@ ComplexType* new_complex_type(ComplexType* complex_type, const char* const name,
 
 void generate_type_def_source_files(const char* const xsd_path);
 
-void output_type_defs(ComplexType* complexType);
+void output_type_defs(ComplexType* complexType, FILE* output);
 
 void free_resources(ComplexType* complex_type);
 

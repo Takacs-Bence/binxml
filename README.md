@@ -36,19 +36,30 @@ Example output: <br>
 
 ```
 XML is valid against the schema!
-LibraryType complex type has 1 elements
-element name: PublishingCompany  element type PublishingCompanyType
-PublishingCompanyType complex type has 2 elements
-element name: CompanyName  element type xs:string
-element name: Books  element type ComplexType\_Books
-ComplexType\_Books complex type has 1 elements
-element name: Book  element type BookType
-BookType complex type has 5 elements
-element name: Empty  element type xs:string
-element name: Title  element type xs:string
-element name: Author  element type xs:string
-element name: PublicationYear  element type xs:integer
-element name: Genre  element type xs:string
+
+typedef struct {
+	size_t PublishingCompanyType_count;
+	PublishingCompanyType* PublishingCompany;
+} LibraryType;
+
+typedef struct {
+	char* CompanyName;
+	size_t Books_count;
+	Books* Books;
+} PublishingCompanyType;
+
+typedef struct {
+	size_t BookType_count;
+	BookType* Book;
+} Books;
+
+typedef struct {
+	char* Empty;
+	char* Title;
+	char* Author;
+	int PublicationYear;
+	char* Genre;
+} BookType;
 ```
 
 
