@@ -91,15 +91,17 @@ ComplexType* new_complex_type(ComplexType* complex_type, const char* const name,
 		// there was no name element, hopefully the name param was set
 	} else if (name != NULL) {
 		// generate based upon the element name param
-		size_t name_length = strlen("ComplexType_") + strlen(name) + 1;
+		//size_t name_length = strlen("ComplexType_") + strlen(name) + 1;
+		size_t name_length = strlen(name) + 1;
 
 		new_type->name = malloc(name_length);
 		if (new_type->name == NULL) {
 			printf("allocating complextype name was not successful");
 			exit(1);
 		}
-		strcpy(new_type->name, "ComplexType_");
-		strncat(new_type->name, name, name_length - strlen(new_type->name) - 1);
+		//strcpy(new_type->name, "ComplexType_");
+		//strncat(new_type->name, name, name_length - strlen(new_type->name) - 1);
+		strlcpy(new_type->name, name, name_length);
 
 	} else {
 		printf("complex type name could not be determined. if complexType is wrapped with an element, pass the element's name\n");
@@ -260,14 +262,60 @@ ComplexType* new_complex_type(ComplexType* complex_type, const char* const name,
 void output_type_defs(ComplexType* complex_type) {
 	ComplexType* ct = complex_type;
 	while (ct != NULL) {	
-		printf("%s complex type has %zu elements\n", ct->name, ct->element_count);
+
+		printf("typedef struct {\n");
 
 		for (size_t i = 0; i < ct->element_count; ++i) {
 			Element element = ct->elements[i];
-			printf("\t element name: %s  element type %s\n", element.name, element.type);
+
+			char* type;
+			
+			// handle predefined xsd types
+			if (strcmp(element.type, "xs:string") == 0) {
+				type = "char*";
+			} else if (strcmp(element.type, "xs:integer") == 0) {
+				type = "int";
+			} else if (strcmp(element.type, "xs:float") == 0) {
+				type = "float";
+			} else if (strcmp(element.type, "xs:double") == 0) {
+				type = "double";
+			} else if (strcmp(element.type, "xs:boolean") == 0) {
+				type = "int"; 
+			} else {
+				type = NULL;
+			}
+
+			if (type != NULL) {
+
+				// print predefined
+				printf("\t%s %s;\n", type, element.name);
+
+			} else {
+				// handle complex types
+				size_t element_type_len = strlen(element.type);
+
+				// add a counter element, because for the pointer member that is follows, needs it
+				char count_suffix[] = "_count;";
+				size_t type_len = strlen(count_suffix) + element_type_len + 1;
+				char count_str[type_len];
+				strcpy(count_str, element.type);
+				strlcat(count_str, count_suffix, type_len);
+				// the size element count will be determined on the actual XML data
+				printf("\tsize_t %s\n", count_str);
+
+				// add the pointer type derived from complex type
+				char type_suffix[2] = "*";
+				type_len = 1 + element_type_len + 1;			
+				char type_val[type_len];
+				strncpy(type_val, element.type, type_len);
+				strlcat(type_val, type_suffix, type_len);
+
+				printf("\t%s %s;\n", type_val, element.name);	
+			}
 		}	
 
-		// have to go backwards, because we are getting the tail of the type array
+		printf("} %s;\n\n", ct->name);
+
 		ct = ct->prev;
 	}
 }
