@@ -3,19 +3,24 @@
 This project is at a fairly early stage of development and is very incomplete. <br> This is my first project implemented in C. 
 
 ## Description and goals
-Protobuf-like binary serialization and deserialization tool with generated type files. <br> The goal is to produce smaller files with more efficient encoding to make communication faster between systems. <br>
-The idea is, if for whatever reason an external component communicates with XML, we can internally process faster and then send back changes.
+Protobuf-like binary serialization and deserialization tool with generated type files. <br> The goal is to produce smaller files with more binary encoding rather than character based XML serialization, in case it matters. <br>
+The idea is, if for whatever reason our system receives an XML as an input, there is an opportunity to persist or change the data internally using fewer resources (hopefully), benchmarking yet to come after the implementation is done. <br>
+
+## Disadvantages
+The XML schema has to match between communicating parties. <br> Versioning is not part of the protocol (yet). <br>
+Debugging binary format is time consuming and stressful. <br>
 
 ## Build and run
 On a Unix-based system, run ./build.sh and ./run.sh
+There is going to be a few test apps in ./test directory.
 
 ## Scopes
 
 [X] Optional schema validation <br>
 [X] Translate XSD (with limitations) to C types <br>
 [X] Generate C files <br>
-[ ] Serialize file as from memory to .bin <br>
-[ ] Deserialize file from .bin back to XML <br>
+[ ] Serialize file from memory to .bin <br>
+[ ] Deserialize file from .bin back to memory and possibly to XML <br>
 
 ## Dependencies
 
@@ -41,29 +46,34 @@ C header file has been generated with the schema types at ./target/generated/Lib
 The content then of the header file is: <br>
 
 ```
-typedef struct {
+typedef struct LibraryType LibraryType;
+typedef struct PublishingCompanyType PublishingCompanyType;
+typedef struct Books Books;
+typedef struct BookType BookType;
+
+struct LibraryType {
 	size_t PublishingCompanyType_count;
 	PublishingCompanyType* PublishingCompany;
-} LibraryType;
+};
 
-typedef struct {
+struct PublishingCompanyType {
 	char* CompanyName;
 	size_t Books_count;
 	Books* Books;
-} PublishingCompanyType;
+};
 
-typedef struct {
+struct Books {
 	size_t BookType_count;
 	BookType* Book;
-} Books;
+};
 
-typedef struct {
+struct BookType {
 	char* Empty;
 	char* Title;
 	char* Author;
 	int PublicationYear;
 	char* Genre;
-} BookType;
+};
 ```
 
 If I make a deliberate mistake in the XML - e.g. add not supported simpleType; <br>
