@@ -1,24 +1,29 @@
-typedef struct {
+typedef struct LibraryType LibraryType;
+typedef struct PublishingCompanyType PublishingCompanyType;
+typedef struct Books Books;
+typedef struct BookType BookType;
+
+struct LibraryType {
 	size_t PublishingCompanyType_count;
 	PublishingCompanyType* PublishingCompany;
-} LibraryType;
+};
 
-typedef struct {
+struct PublishingCompanyType {
 	char* CompanyName;
 	size_t Books_count;
 	Books* Books;
-} PublishingCompanyType;
+};
 
-typedef struct {
+struct Books {
 	size_t BookType_count;
 	BookType* Book;
-} Books;
+};
 
-typedef struct {
+struct BookType {
 	char* Empty;
 	char* Title;
 	char* Author;
 	int PublicationYear;
 	char* Genre;
-} BookType;
+};
 
