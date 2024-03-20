@@ -1,17 +1,27 @@
 # POC for XML binary serialization
 
-This project is at a fairly early stage of development and is very incomplete. <br> This is my first project implemented in C. 
+Binary XML serialization protocol that uses binary tables to encode/decode data, written in C. Serialized files are more compact to send over network and faster to process. <br> 
+Resembles to protobuf with generated C header files for types to allow modifications and integration into code-base. <br>
+Is only a POC, not the whole XML spec is implemented. <br>
 
-## Description and goals
-Protobuf-like binary serialization and deserialization tool with generated type files. <br> The goal is to produce smaller files with more binary encoding rather than character based XML serialization, in case it matters. <br>
-The idea is, if for whatever reason our system receives an XML as an input, there is an opportunity to persist or change the data internally using fewer resources (hopefully), benchmarking yet to come after the implementation is done. <br>
+## Story and goal
+Coming from a Java Enterprise background I had experience with XML, protobuf and binary table structures. <br> 
+Having developed an interest for lower level programming, I developed this idea to encode an XML by restrainted by its schema definition. <br>
+Being my first real C project, I am also exploring how to write C code. <br>
+
+Two weeks into development, I have found that BiM (Binary MPEG format for XML) standard and EXI (Efficient XML Interchange) do already exist. <br>
+My goal is not to write the protocol for the whole XML specification, or to compete with these implementations, but rather to finish my initial idea in a reasonable time frame. 
 
 ## Disadvantages
-The XML schema has to match between communicating parties. <br> Versioning is not part of the protocol (yet). <br>
-Debugging binary format is time consuming and stressful. <br>
+The XML schema has to match between communicating parties. <br> 
+Versioning is not part of the protocol. <br>
+Debugging binary format is time consuming and not human-friendly without tools. <br>
 
 ## Build and run
-On a Unix-based system, run ./build.sh and ./run.sh
+On a Unix-based system, run ```./build.sh``` . It uses clang. <br> 
+There are some convinience scripts at project root to try out different command programs. <br> 
+E.g. ```./validate.sh``` or ```./generate.sh``` <br>
+Also see Usage section.
 There is going to be a few test apps in ./test directory.
 
 ## Scopes
@@ -20,21 +30,21 @@ There is going to be a few test apps in ./test directory.
 [X] Translate XSD (with limitations) to C types <br>
 [X] Generate C files <br>
 [ ] Serialize file from memory to .bin <br>
-[ ] Deserialize file from .bin back to memory and possibly to XML <br>
+[ ] Deserialize file from .bin back to memory 
+[ ] Marshall from memory to XML <br>
 
 ## Dependencies
 
 The project relies heavily on libxml2 for XML and schema parsing/validation.
-
 
 ## Usage
 
 There are some test XML and connected schema in the /data dir. <br>
 E.g. Library.xsd contains no simpleTypes, no simple/complexContent or any types.<br>
 <br>
-Basically complexTypes, nested anonym complexTypes in elements are supported at this point.<br>
 
-Running the ./run script this schema will be validated (optional with flag) and parsed. <br>
+
+Basically complexTypes, nested anonym complexTypes in elements are supported at this point.<br>
 
 Use ```binxml help``` for info on how to use the program. 
 There are 4 commands at the moment, from valdidate and generate works, pack is WIP and unpack is TBD.
