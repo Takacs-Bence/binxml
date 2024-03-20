@@ -36,6 +36,16 @@ Basically complexTypes, nested anonym complexTypes in elements are supported at 
 
 Running the ./run script this schema will be validated (optional with flag) and parsed. <br>
 
+Use ```binxml help``` for info on how to use the program. 
+There are 4 commands at the moment, from valdidate and generate works, pack is WIP and unpack is TBD.
+
+```
+Commands:
+         validate        args: <xml_path> <xsd_path>
+         generate        args: <xsd_path> <output_dir>
+         pack            args: <xml_path> <output_dir>
+         unpack          args: <bin_path> <xsd_path> <output_dir>
+```
 Example output: <br>
 
 ```

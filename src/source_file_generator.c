@@ -7,7 +7,6 @@
 #include <sys/stat.h>
 
 #include "libxml/parser.h"
-#include "libxml/tree.h"
 
 #include "complex_type.h"
 #include "source_file_generator.h"
