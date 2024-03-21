@@ -56,15 +56,16 @@ int main(int argc, char** argv) {
 		generate_type_def_source_files(xsd_path, output_dir);
 	} else if (str_case_cmp(command, "pack") == 0) {
 		// need an xml path and an output dir
-		if (argc != 4) {
-			printf("binxml pack accepts exactly two parameters: <xml_path> and <output_dir>\n");
+		if (argc != 5) {
+			printf("binxml pack accepts exactly two parameters: <xml_path> <c_types_path> and <output_dir>\n");
 			exit(1);
 		}
 
 		xml_path = argv[2];
-		output_dir = argv[3];
+		char* c_types_path = argv[3];
+		output_dir = argv[4];
 		
-		binxml_encode(xml_path, output_dir);
+		binxml_encode(xml_path, c_types_path, output_dir);
 
 	} else if (str_case_cmp(command, "unpack") == 0) {
 		printf("xmlbin unpack is not yet implemented\n");		
@@ -81,7 +82,7 @@ explain_usage:
 	printf("Commands:\n");
 	printf("\t validate \t args: <xml_path> <xsd_path>\n");
 	printf("\t generate \t args: <xsd_path> <output_dir>\n");
-	printf("\t pack \t\t args: <xml_path> <output_dir>\n");
+	printf("\t pack \t\t args: <xml_path> <c_types_path> <output_dir>\n");
 	printf("\t unpack \t args: <bin_path> <xsd_path> <output_dir>\n");
 }
 

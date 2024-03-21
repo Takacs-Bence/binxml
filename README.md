@@ -1,21 +1,17 @@
-# POC for XML binary serialization
+# binxml - a binary XML protocol implemented in C
 
-Binary XML serialization protocol that uses binary tables to encode/decode data, written in C. Serialized files are more compact to send over network and faster to process. <br> 
-Resembles to protobuf with generated C header files for types to allow modifications and integration into code-base. <br>
-Is only a POC, not the whole XML spec is implemented. <br>
+Binary XML serialization protocol that uses binary structure tables to encode/decode data. <br> 
 
-## Story and goal
-Coming from a Java Enterprise background I had experience with XML, protobuf and binary table structures. <br> 
-Having developed an interest for lower level programming, I developed this idea to encode an XML by restrainted by its schema definition. <br>
-Being my first real C project, I am also exploring how to write C code. <br>
 
-Two weeks into development, I have found that BiM (Binary MPEG format for XML) standard and EXI (Efficient XML Interchange) do already exist. <br>
-My goal is not to write the protocol for the whole XML specification, or to compete with these implementations, but rather to finish my initial idea in a reasonable time frame. 
-
-## Disadvantages
+### Disadvantages
 The XML schema has to match between communicating parties. <br> 
-Versioning is not part of the protocol. <br>
 Debugging binary format is time consuming and not human-friendly without tools. <br>
+
+## Disclaimer
+<strong>binxml is not producion ready!<strong>
+The project is a work in progress and the initial scope has many limitations e.g. what parts of an XML schema is supported. <br>
+At this point if the XSD has complexTypes or/and elements with nested anonymous complexTypes in it, it is going to work. Other components like simpleType, simpleContext, complexContext  are not supported yet. <br>
+From an attribute point of view, attributes other than ```name``` and ```type``` are ignored.
 
 ## Build and run
 On a Unix-based system, run ```./build.sh``` . It uses clang. <br> 
@@ -29,9 +25,9 @@ There is going to be a few test apps in ./test directory.
 [X] Optional schema validation <br>
 [X] Translate XSD (with limitations) to C types <br>
 [X] Generate C files <br>
-[ ] Serialize file from memory to .bin <br>
-[ ] Deserialize file from .bin back to memory 
-[ ] Marshall from memory to XML <br>
+[ ] Serialize file to .bin <br>
+[ ] Deserialize file from .bin 
+[ ] Marshall back to XML <br>
 
 ## Dependencies
 
@@ -39,10 +35,9 @@ The project relies heavily on libxml2 for XML and schema parsing/validation.
 
 ## Usage
 
-There are some test XML and connected schema in the /data dir. <br>
+There are some test XMLs and connected schema in the /data dir. <br>
 E.g. Library.xsd contains no simpleTypes, no simple/complexContent or any types.<br>
 <br>
-
 
 Basically complexTypes, nested anonym complexTypes in elements are supported at this point.<br>
 
