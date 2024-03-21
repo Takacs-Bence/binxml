@@ -38,10 +38,10 @@ Pre-generate C files with the `generate` commmand. See Usage. <br>
 [X] Optional schema validation <br>
 [X] Translate XSD (with limitations) to C types <br>
 [X] Generate C files <br>
-[ ] Add encoding functions to C files.
-[ ] Add decoding functions to C files.
-[ ] Add marshalling functions to C files.
-[ ] Add unmarshalling functions to C files.
+[ ] Add encoding functions to C files. <br>
+[ ] Add decoding functions to C files. <br>
+[ ] Add marshalling functions to C files. <br>
+[ ] Add unmarshalling functions to C files. <br>
 
 ## Dependencies
 
@@ -55,7 +55,7 @@ Use these to write your logic and their encoding/decoding functions to handle .b
 XML files can be validated upon receiving or before sending. <br> The marshalling functions do not make validation checks. <br>
 
 **TBD**
-**not up-to-date**
+**not up-to-date** <br>
 
 Use ```binxml help``` for info on how to use the program. 
 There are 4 commands at the moment, from valdidate and generate works, pack is WIP and unpack is TBD.
