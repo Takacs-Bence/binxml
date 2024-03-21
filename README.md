@@ -5,10 +5,10 @@ Has a two-phase workflow, with protobuf-like compilation phase, where C files ar
 
 ## Advantages
 
-> XML is a standardized, highly popular, widespread tool for stroring and transporting data.
-> 
-> [Refsnes Data], "[Introduction to XML]," [https://www.w3schools.com/xml/xml\_whatis.asp], [2024].
+XML is a standardized, highly popular, widespread tool for stroring and transporting data. <br>
+Dealing with huge files it can be too verbose because of its character encoding mechanism, and processing can be done linearly. <br>
 
+`binxml` allows random access querying and modification plus smaller network footprint. <br>
 
 ### Disadvantages
 The XML schema has to be available for both parties upfront. <br> 
@@ -20,28 +20,28 @@ The project is a work in progress and the initial scope has many limitations e.g
 At this point if the XSD has complexTypes or/and elements with nested anonymous complexTypes in it, it is going to work. Other components like simpleType, simpleContext, complexContext  are not supported yet. <br>
 From an attribute point of view, attributes other than `name` and `type` are ignored.
 
+`binxml` is not an EXI (Efficient Extensible Interchange) or BiM (Binary XML) implementation at the moment.
+
 ## How does it work?
 
+// TBD
 
 ## Build and run
 
 Being cross-platform is not a priority at this point. <br>
 
-
-On a Unix-based system, run ```./build.sh``` . It uses clang. <br> 
-There are some convinience scripts at project root to try out different command programs. <br> 
-E.g. ```./validate.sh``` or ```./generate.sh``` <br>
-Also see Usage section.
-There is going to be a few test apps in ./test directory.
+On a Unix-based system, build the project with clang with the `./build.sh` script. <br> 
+Pre-generate C files with the `generate` commmand. See Usage. <br>
 
 ## Scopes
 
 [X] Optional schema validation <br>
 [X] Translate XSD (with limitations) to C types <br>
 [X] Generate C files <br>
-[ ] Serialize file to .bin <br>
-[ ] Deserialize file from .bin 
-[ ] Marshall back to XML <br>
+[ ] Add encoding functions to C files.
+[ ] Add decoding functions to C files.
+[ ] Add marshalling functions to C files.
+[ ] Add unmarshalling functions to C files.
 
 ## Dependencies
 
@@ -49,11 +49,13 @@ The project relies heavily on libxml2 for XML and schema parsing/validation.
 
 ## Usage
 
-There are some test XMLs and connected schema in the /data dir. <br>
-E.g. Library.xsd contains no simpleTypes, no simple/complexContent or any types.<br>
-<br>
+`binxml generate <xsd_path> <output_dir>` for generating C files. <br>
+Use these to write your logic and their encoding/decoding functions to handle .bin files, or their marshalling/unmarshalling functions for XML. <br>
 
-Basically complexTypes, nested anonym complexTypes in elements are supported at this point.<br>
+XML files can be validated upon receiving or before sending. <br> The marshalling functions do not make validation checks. <br>
+
+**TBD**
+**not up-to-date**
 
 Use ```binxml help``` for info on how to use the program. 
 There are 4 commands at the moment, from valdidate and generate works, pack is WIP and unpack is TBD.
