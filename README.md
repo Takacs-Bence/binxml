@@ -37,7 +37,7 @@ Pre-generate C files with the `generate` commmand. See Usage. <br>
 
 [X] Optional schema validation <br>
 [X] Translate XSD (with limitations) to C types <br>
-[X] Generate C files <br>
+[X] Generate C files with type definitions <br>
 [ ] Add encoding functions to C files. <br>
 [ ] Add decoding functions to C files. <br>
 [ ] Add marshalling functions to C files. <br>
