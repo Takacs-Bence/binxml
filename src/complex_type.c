@@ -2,20 +2,13 @@
 
 #include "complex_type.h"
 
-
 ComplexType* complex_type_create(ComplexType* complex_type, const char* const name, xmlNodePtr complex_element) {
 	// allocate mem for new type
-	ComplexType* new_type = malloc(sizeof(ComplexType));
+	ComplexType* new_type = calloc(1, sizeof(ComplexType));
 	if (new_type == NULL) {
 		printf("could not allocate memmory for complex type definition");
 		exit(1);
 	}
-	// set defaults
-	new_type->name = NULL;
-	new_type->element_count = 0;
-	new_type->elements = NULL;
-	new_type->next = NULL;
-	new_type->prev = NULL;
 
 	// try setting complex_type name first by its name attribute
 	// that is usually the case when it is not inside an xs:element
@@ -23,7 +16,7 @@ ComplexType* complex_type_create(ComplexType* complex_type, const char* const na
 
 	if (name_value != NULL) {
 		// set the name
-		new_type->name = malloc(strlen((char*) name_value) + 1);
+		new_type->name = calloc(strlen((char*) name_value) + 1, sizeof(char));
 		if (new_type->name == NULL) {
 			printf("allocating complextype name was not successful");
 			exit(1);
@@ -39,7 +32,7 @@ ComplexType* complex_type_create(ComplexType* complex_type, const char* const na
 		//size_t name_length = strlen("ComplexType_") + strlen(name) + 1;
 		size_t name_length = strlen(name) + 1;
 
-		new_type->name = malloc(name_length);
+		new_type->name = calloc(name_length, sizeof(char));
 		if (new_type->name == NULL) {
 			printf("allocating complextype name was not successful");
 			exit(1);
@@ -70,19 +63,13 @@ ComplexType* complex_type_create(ComplexType* complex_type, const char* const na
 			//create a dyanmic array for elements
 			size_t element_count = 0;
 			size_t elements_arr_size = ELEMENTS_INITIAL_CAPACITY;
-			Element* elements = malloc(sizeof(Element) * elements_arr_size);
+			Element* elements = calloc(elements_arr_size, sizeof(Element));
 
 			new_type->elements = elements;
 
 			if (elements == NULL) {
 				printf("could not allocate for elements");
 				exit(1);
-			}
-
-			// initialize element default values
-			for (size_t i = 0; i < elements_arr_size; ++i) {
-				elements[i].name = NULL;
-				elements[i].type = NULL;
 			}
 
 			// process properties
@@ -132,7 +119,7 @@ ComplexType* complex_type_create(ComplexType* complex_type, const char* const na
 						/* HINT: this would be the place to put type/name generating logic,
 						 * when those attributes are missing */
 						if (strncmp((char*) property->name, "type", 4) == 0) {
-							new_element->type = malloc(strlen((char*) property->children->content) + 1);
+							new_element->type = calloc(strlen((char*) property->children->content) + 1, sizeof(char));
 							if (new_element->type == NULL) {
 								printf("could not allocate for type_str");
 								exit(1);
@@ -140,7 +127,7 @@ ComplexType* complex_type_create(ComplexType* complex_type, const char* const na
 							strcpy(new_element->type, (char*) property->children->content);
 
 						} else if (strncmp((char*) property->name, "name", 4) == 0) {
-							new_element->name = malloc(strlen((char*) property->children->content) + 1);
+							new_element->name = calloc(strlen((char*) property->children->content) + 1, sizeof(char));
 							if (new_element->name == NULL) {
 								printf("could not allocate for type_str");
 								exit(1);
@@ -157,7 +144,7 @@ ComplexType* complex_type_create(ComplexType* complex_type, const char* const na
 						xmlNodePtr embedded = element_node->children;
 						if (embedded == NULL) {
 							// default type, nothing embedded here
-							new_element->type = malloc(strlen("xs:string") + 1);
+							new_element->type = calloc(strlen("xs:string") + 1, sizeof(char));
 							if (new_element->type == NULL) {
 								printf("could not allocate string for default type");
 								exit(1);
@@ -171,7 +158,7 @@ ComplexType* complex_type_create(ComplexType* complex_type, const char* const na
 									// complexType found, recursively append this type to the type defs
 									complex_type = complex_type_create(complex_type, new_element->name, embedded);	
 									// get the type from the newly appended complex type
-									new_element->type = malloc(strlen(complex_type->name + 1));
+									new_element->type = calloc(strlen(complex_type->name + 1), sizeof(char));
 									if (new_element->type == NULL) {
 										printf("could not allocate string for element type");
 										exit(1);

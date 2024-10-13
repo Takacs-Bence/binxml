@@ -10,6 +10,4 @@
 // if a file there with the same type has been generated, its content will be overriden 
 void generate_type_def_source_files(const char* const xsd_path, const char* const output_dir_path);
 
-void output_type_defs(ComplexType* complexType, FILE* output);
-
 #endif // SOURCE_FILE_GENERATOR_H

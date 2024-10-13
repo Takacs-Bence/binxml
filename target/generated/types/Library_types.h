@@ -27,3 +27,6 @@ struct BookType {
 	char* Genre;
 };
 
+
+void encode(const char* const xml_path);
+void decode(const char* const xml_path);

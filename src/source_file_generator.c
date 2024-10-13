@@ -11,6 +11,93 @@
 #include "complex_type.h"
 #include "source_file_generator.h"
 
+static void output_type_defs(ComplexType* complex_type, FILE* output) {
+	if (output == NULL) {
+		printf("output file does not exist\n");
+		exit(1);		
+	}
+	
+	// first define the typedefs first, so the order does not matter in case of interdependencies
+	ComplexType* ct = complex_type;
+	while (ct != NULL) {
+		fprintf(output, "typedef struct %s %s;\n", ct->name, ct->name);
+		
+		ct = ct->prev;
+	}
+	
+	// print one extra empty line to separate typedefs from structs
+	fprintf(output, "\n");
+	
+	// do the iteration again, now print the structs
+	ct = complex_type;
+	while (ct != NULL) {	
+
+		fprintf(output, "struct %s {\n", ct->name);
+
+		for (size_t i = 0; i < ct->element_count; ++i) {
+			Element element = ct->elements[i];
+
+			char* type;
+
+			// handle predefined xsd types
+			if (strcmp(element.type, "xs:string") == 0) {
+				type = "char*";
+			} else if (strcmp(element.type, "xs:integer") == 0) {
+				type = "int";
+			} else if (strcmp(element.type, "xs:float") == 0) {
+				type = "float";
+			} else if (strcmp(element.type, "xs:double") == 0) {
+				type = "double";
+			} else if (strcmp(element.type, "xs:boolean") == 0) {
+				type = "int"; 
+			} else {
+				type = NULL;
+			}
+
+			if (type != NULL) {
+
+				// print predefined
+				fprintf(output, "\t%s %s;\n", type, element.name);
+
+			} else {
+				// handle complex types
+				size_t element_type_len = strlen(element.type);
+
+				// add a counter element, because for the pointer member that is follows, needs it
+				char count_suffix[] = "_count;";
+				size_t type_len = strlen(count_suffix) + element_type_len + 1;
+				char count_str[type_len];
+				strcpy(count_str, element.type);
+				strlcat(count_str, count_suffix, type_len);
+				// the size element count will be determined on the actual XML data
+				fprintf(output, "\tsize_t %s\n", count_str);
+
+				// add the pointer type derived from complex type
+				char type_suffix[2] = "*";
+				type_len = strlen(type_suffix) + element_type_len + 1;			
+				char type_val[type_len];
+				strncpy(type_val, element.type, type_len);
+				strlcat(type_val, type_suffix, type_len);
+
+				fprintf(output, "\t%s %s;\n", type_val, element.name);
+			}
+		}	
+
+		fprintf(output, "};\n\n");
+
+		ct = ct->prev;
+	}
+
+	// after processing the complex types, add encode/decode function definitions
+	fprintf(output, "\n");
+	fprintf(output, "void encode(const char* const xml_path);\n");
+	fprintf(output, "void decode(const char* const xml_path);\n");
+}
+
+static void output_impl() {
+	
+}
+
 void generate_type_def_source_files(const char* const xsd_path, const char* const output_dir_path) {
 	xmlDocPtr schema;
 	xmlNodePtr root, node;
@@ -130,92 +217,18 @@ void generate_type_def_source_files(const char* const xsd_path, const char* cons
 			exit(1);
 		}
 		
-		// generate type defs to file
+		// generate type defs to header file
 		output_type_defs(complex_type, file_handle);
 		printf("C header file has been generated with the schema types at %s\n", generated_file_name);
+
+		// generate c file implementing previously generated header file
+		output_impl();
+
 		// close file resource
 		fclose(file_handle);
 	}
 
 	complex_type_free(complex_type);
 	xmlFreeDoc(schema);
-}
-
-void output_type_defs(ComplexType* complex_type, FILE* output) {
-	if (output == NULL) {
-		printf("output file does not exist\n");
-		exit(1);		
-	}
-	
-	// first define the typedefs first, so the order does not matter in case of interdependencies
-	ComplexType* ct = complex_type;
-	while (ct != NULL) {
-		fprintf(output, "typedef struct %s %s;\n", ct->name, ct->name);
-		
-		ct = ct->prev;
-	}
-	
-	// print one extra empty line to separate typedefs from structs
-	fprintf(output, "\n");
-	
-	// do the iteration again, now print the structs
-	ct = complex_type;
-	while (ct != NULL) {	
-
-		fprintf(output, "struct %s {\n", ct->name);
-
-		for (size_t i = 0; i < ct->element_count; ++i) {
-			Element element = ct->elements[i];
-
-			char* type;
-
-			// handle predefined xsd types
-			if (strcmp(element.type, "xs:string") == 0) {
-				type = "char*";
-			} else if (strcmp(element.type, "xs:integer") == 0) {
-				type = "int";
-			} else if (strcmp(element.type, "xs:float") == 0) {
-				type = "float";
-			} else if (strcmp(element.type, "xs:double") == 0) {
-				type = "double";
-			} else if (strcmp(element.type, "xs:boolean") == 0) {
-				type = "int"; 
-			} else {
-				type = NULL;
-			}
-
-			if (type != NULL) {
-
-				// print predefined
-				fprintf(output, "\t%s %s;\n", type, element.name);
-
-			} else {
-				// handle complex types
-				size_t element_type_len = strlen(element.type);
-
-				// add a counter element, because for the pointer member that is follows, needs it
-				char count_suffix[] = "_count;";
-				size_t type_len = strlen(count_suffix) + element_type_len + 1;
-				char count_str[type_len];
-				strcpy(count_str, element.type);
-				strlcat(count_str, count_suffix, type_len);
-				// the size element count will be determined on the actual XML data
-				fprintf(output, "\tsize_t %s\n", count_str);
-
-				// add the pointer type derived from complex type
-				char type_suffix[2] = "*";
-				type_len = strlen(type_suffix) + element_type_len + 1;			
-				char type_val[type_len];
-				strncpy(type_val, element.type, type_len);
-				strlcat(type_val, type_suffix, type_len);
-
-				fprintf(output, "\t%s %s;\n", type_val, element.name);	
-			}
-		}	
-
-		fprintf(output, "};\n\n");
-
-		ct = ct->prev;
-	}
 }
 

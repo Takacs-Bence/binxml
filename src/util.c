@@ -18,15 +18,11 @@ int str_case_cmp(const char *s1, const char *s2) {
 }
 
 StringList* new_string_list() {
-	StringList* list = malloc(sizeof(StringList));
+	StringList* list = calloc(1, sizeof(StringList));
 	if (list == NULL) {
 		printf("could not allocate new_string_list");
 		exit(1);	
 	}
-
-	list->size = 0;
-	list->array = NULL;
-
 	return list;
 }
 

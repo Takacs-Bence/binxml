@@ -54,6 +54,9 @@ int main(int argc, char** argv) {
 
 		// will generate C header file with type to output dir based upon xsd_path if successful
 		generate_type_def_source_files(xsd_path, output_dir);
+
+		binxml_encode(xml_path, output_dir);
+
 	} else if (str_case_cmp(command, "pack") == 0) {
 		// need an xml path and an output dir
 		if (argc != 5) {
@@ -64,8 +67,6 @@ int main(int argc, char** argv) {
 		xml_path = argv[2];
 		char* c_types_path = argv[3];
 		output_dir = argv[4];
-		
-		binxml_encode(xml_path, c_types_path, output_dir);
 
 	} else if (str_case_cmp(command, "unpack") == 0) {
 		printf("xmlbin unpack is not yet implemented\n");		
