@@ -11,9 +11,16 @@
 #include "complex_type.h"
 #include "source_file_generator.h"
 
-static void output_type_defs(ComplexType* complex_type, FILE* output) {
-	if (output == NULL) {
-		printf("output file does not exist\n");
+typedef enum {
+    FILE_TYPE_H,
+    FILE_TYPE_C
+} FileType;
+
+static void
+output_header_file(ComplexType* complex_type, FILE* output)
+{
+	if (!output) {
+		perror("output file does not exist\n");
 		exit(1);		
 	}
 	
@@ -89,16 +96,19 @@ static void output_type_defs(ComplexType* complex_type, FILE* output) {
 	}
 
 	// after processing the complex types, add encode/decode function definitions
-	fprintf(output, "\n");
-	fprintf(output, "void encode(const char* const xml_path);\n");
-	fprintf(output, "void decode(const char* const xml_path);\n");
+	fprintf(output, "void encode(const char* const xml_path, const char* const output_dir);\n");
+	fprintf(output, "void decode(const char* const xml_path, const char* const output_dir);\n");
 }
 
-static void output_impl() {
+static void 
+output_impl_file(ComplexType* complex_type, FILE* output) 
+{
 	
 }
 
-void generate_type_def_source_files(const char* const xsd_path, const char* const output_dir_path) {
+static ComplexType* 
+create_complex_type(const char* const xsd_path) 
+{
 	xmlDocPtr schema;
 	xmlNodePtr root, node;
 
@@ -108,16 +118,16 @@ void generate_type_def_source_files(const char* const xsd_path, const char* cons
 
 	if (schema == NULL) {
 		printf("Failed to parse XSD file at path: %s\n", xsd_path);
-		return;
+		exit(1);
 	}
 
 	// root is the schema
 	root = xmlDocGetRootElement(schema);
 
 	if (root == NULL) {
-		printf("Schema is empty\n");
+		perror("Schema is empty\n");
 		xmlFreeDoc(schema);
-		return;
+		exit(1);
 	}
 
 	/* under schema there are elements and simple/complex types listed.	 
@@ -144,91 +154,116 @@ void generate_type_def_source_files(const char* const xsd_path, const char* cons
 			}
 		}
 	}
+	xmlFreeDoc(schema);
+	return complex_type;
+}
+
+static FILE *
+create_file_handle(const char* const xsd_path, const char* const output_dir_path, FileType fileType)
+{
+	// check if output_dir_path is a valid directory
+	struct stat path_stat;
+
+	// use stat to get file information
+	if (stat(output_dir_path, &path_stat) != 0)
+	{
+		// error in checking file info, at the stat syscall
+		perror("stat");
+		exit(1);
+	}
+
+	// if not a directory, exit program
+	if (!S_ISDIR(path_stat.st_mode))
+	{
+		perror("output_dir_path is not a directory\n");
+		exit(1);
+	}
+
+	// get generated file name from xsd
+	char generated_file_name[256];
+
+	// get last slash that is just before the file name
+	const char *last_slash = strrchr(xsd_path, '/');
+	if (!last_slash)
+	{
+		// no slash, we are in the directory already
+		last_slash = xsd_path;
+	}
+	else
+	{
+		// increment on the last slash, to get the start of file name
+		last_slash++;
+	}
+
+	// get the last dot, that is before the extension
+	const char *last_dot = strrchr(xsd_path, '.');
+	// no support for silent extensions
+	if (!last_dot)
+	{
+		perror("could not find extension of xsd_path\n");
+		exit(1);
+	}
+
+	// get xsd file name length
+	size_t file_name_length = last_dot - last_slash;
+	const char* suffix = (fileType == FILE_TYPE_H) ?  "_types.h" : "_types.c";
+	// check if the file name length fits in the generated_file_name
+	if (file_name_length <= 0 || sizeof(generated_file_name) <= (strlen(output_dir_path) + 1 + strlen(suffix) + sizeof(file_name_length)))
+	{
+		perror("path to output dir + xsd file name without extension + appended suffix '_types.h' must fit into 512 -1 bytes\n");
+		exit(1);
+	}
+
+	/* create the output file path */
+
+	char naked_xsd_file_name[file_name_length + 1];
+	strlcpy(naked_xsd_file_name, last_slash, sizeof(naked_xsd_file_name));
+	// concat the output dir
+	strlcpy(generated_file_name, output_dir_path, sizeof(generated_file_name));
+	// add an optional '/' char, if it's missing from end
+	if (generated_file_name[strlen(generated_file_name) - 1] != '/')
+	{
+		strlcat(generated_file_name, "/", sizeof(generated_file_name));
+	}
+	// the xsd file name without the extension
+	strlcat(generated_file_name, naked_xsd_file_name, sizeof(generated_file_name));
+	// and some suffix
+	strlcat(generated_file_name, suffix, sizeof(generated_file_name));
+
+	// open and truncate content or create if does not exist
+	FILE *file_handle = fopen(generated_file_name, "w+");
+	if (file_handle == NULL)
+	{
+		perror("could not get handle to generated type file\n");
+		exit(1);
+	}
+	return file_handle;
+}
+
+void 
+generate_type_def_source_files(const char* const xsd_path, const char* const output_dir_path) 
+{
+	// create object list and get root
+	ComplexType* complex_type = create_complex_type(xsd_path);
 
 	// if output_dir is not specified, print to stdout
 	if (output_dir_path == NULL) {
-		output_type_defs(complex_type, stdout);
+		output_header_file(complex_type, stdout);
+		output_impl_file(complex_type, stdout);
 	} else {
-		// check if output_dir_path is a valid directory
-		struct stat path_stat;
-
-		// use stat to get file information
-		if (stat(output_dir_path, &path_stat) != 0) {
-			// error in checking file info, at the stat syscall
-			perror("stat");
-			exit(1);	
-		}	
-
-		// if not a directory, exit program
-		if (!S_ISDIR(path_stat.st_mode)) {
-			printf("output_dir_path is not a directory\n");
-			exit(1);
-		}
-
-		// get generated file name from xsd
-		char generated_file_name[256];
-
-		// get last slash that is just before the file name
-		const char* last_slash = strrchr(xsd_path, '/');
-		if (last_slash == NULL) {
-			// no slash, we are in the directory already
-			last_slash = xsd_path;
-		} else {
-			// increment on the last slash, to get the start of file name
-			last_slash++;
-		}
-
-		// get the last dot, that is before the extension			
-		const char* last_dot = strrchr(xsd_path, '.');
-		// no support for silent extensions
-		if (last_dot == NULL) {
-			printf("could not find extension of xsd_path\n");
-			exit(1);
-		}
-
-		// get xsd file name length
-		size_t file_name_length = last_dot - last_slash;
-		char suffix[9] = "_types.h";
-		// check if the file name length fits in the generated_file_name
-		if (file_name_length <= 0 || sizeof(generated_file_name) <= (strlen(output_dir_path) + 1 + strlen(suffix) + sizeof(file_name_length))) {
-			printf("path to output dir + xsd file name without extension + appended suffix '_types.h' must fit into 512 -1 bytes\n");
-			exit(1);
-		}
-
-		/* create the output file path */
-
-		char naked_xsd_file_name[file_name_length + 1];
-		strlcpy(naked_xsd_file_name, last_slash, sizeof(naked_xsd_file_name));
-		// concat the output dir
-		strlcpy(generated_file_name, output_dir_path, sizeof(generated_file_name));
-		// add an optional '/' char, if it's missing from end
-		if (generated_file_name[strlen(generated_file_name) - 1] != '/') {
-			strlcat(generated_file_name, "/", sizeof(generated_file_name));
-		}
-		// the xsd file name without the extension 
-		strlcat(generated_file_name, naked_xsd_file_name, sizeof(generated_file_name));
-		//and some suffix
-		strlcat(generated_file_name, suffix, sizeof(generated_file_name));
-
-		// open and truncate content or create if does not exist
-		FILE* file_handle = fopen(generated_file_name, "w+");
-		if (file_handle == NULL) {
-			printf("could not get handle to generated type file\n");
-			exit(1);
-		}
 		
+		FILE* file_handle_h = create_file_handle(xsd_path, output_dir_path, FILE_TYPE_H);
 		// generate type defs to header file
-		output_type_defs(complex_type, file_handle);
-		printf("C header file has been generated with the schema types at %s\n", generated_file_name);
+		output_header_file(complex_type, file_handle_h);
+		fclose(file_handle_h);
 
+		FILE* file_handle_c = create_file_handle(xsd_path, output_dir_path, FILE_TYPE_C);
 		// generate c file implementing previously generated header file
-		output_impl();
-
-		// close file resource
-		fclose(file_handle);
+		output_impl_file(complex_type, file_handle_c);
+		fclose(file_handle_c);
 	}
 
+	printf("C files has been generated from schema %s to directory %s\n", xsd_path, output_dir_path);
 	complex_type_free(complex_type);
-	xmlFreeDoc(schema);
 }
 
