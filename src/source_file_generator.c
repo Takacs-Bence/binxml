@@ -100,10 +100,66 @@ output_header_file(ComplexType* complex_type, FILE* output)
 	fprintf(output, "void decode(const char* const xml_path, const char* const output_dir);\n");
 }
 
+/*
+ * How encoding works: 
+ * Given the complex type instance it goes th
+ * 
+*/
+
+static char*
+encode_block(ComplexType* complex_type)
+{
+	// Initial allocation with space for the initial string and null terminator
+    size_t initial_size = 128;
+    char* code_block = calloc(initial_size, sizeof(char));
+    if (code_block == NULL) {
+        perror("Failed to allocate memory");
+        exit(1);
+    }
+	// Starting content
+    snprintf(code_block, initial_size, "\treturn;\n");
+
+    // Example of appending more content dynamically
+    const char* additional_line = "\t// Encoding logic goes here\n";
+    size_t new_length = strlen(code_block) + strlen(additional_line) + 1;
+    if (new_length > initial_size) {
+        // Reallocate with a larger size and initialize new space with zero
+        char* temp = realloc(code_block, new_length);
+        if (temp == NULL) {
+            free(code_block);
+            perror("Failed to reallocate memory");
+            exit(1);
+        }
+        code_block = temp;
+        // No need to zero-initialize with `realloc` because it retains existing data
+    }
+    strcat(code_block, additional_line);
+
+    return code_block;
+}
+
 static void 
 output_impl_file(ComplexType* complex_type, FILE* output) 
 {
-	
+	if (!output) {
+		perror("output file does not exist\n");
+		exit(1);
+	}
+
+	// add imports
+	fprintf(output, "#include <stdlib.h>\n");
+	fprintf(output, "#include <stdio.h>\n");
+	fprintf(output, "#include \"Library_types.h\"\n\n");
+
+	// add encode function 
+	fprintf(output, "void encode(const char* const xml_path, const char* const output_dir)\n");
+	char* encoded_block = encode_block(complex_type);
+	fprintf(output, "{\n%s}\n\n", encoded_block);
+	free(encoded_block);
+
+	// add decode function
+	fprintf(output, "void decode(const char* const xml_path, const char* const output_dir)\n");
+	fprintf(output, "{\n\treturn;\n}\n\n");
 }
 
 static ComplexType* 
@@ -158,6 +214,10 @@ create_complex_type(const char* const xsd_path)
 	return complex_type;
 }
 
+/*
+ * generates file name based on inputs and returns the file handle or exits program.
+ * if the file already exists it will try and truncate its content.
+*/
 static FILE *
 create_file_handle(const char* const xsd_path, const char* const output_dir_path, FileType fileType)
 {

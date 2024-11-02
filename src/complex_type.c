@@ -2,7 +2,9 @@
 
 #include "complex_type.h"
 
-ComplexType* complex_type_create(ComplexType* complex_type, const char* const name, xmlNodePtr complex_element) {
+ComplexType*
+complex_type_create(ComplexType* complex_type, const char* const name, xmlNodePtr complex_element)
+{
 	// allocate mem for new type
 	ComplexType* new_type = calloc(1, sizeof(ComplexType));
 	if (new_type == NULL) {
@@ -191,7 +193,28 @@ ComplexType* complex_type_create(ComplexType* complex_type, const char* const na
 	return new_type;
 }
 
-void complex_type_free(ComplexType* complex_type) {
+size_t
+complex_type_calc_header_size(ComplexType* complex_type)
+{
+    size_t total_size = 0;
+
+    // Traverse through the complex type linked list
+    ComplexType* current = complex_type;
+    while (current != NULL) {
+		// TODO actually calculate this is just skeleton
+        total_size += sizeof(size_t); // for element_count
+        total_size += current->element_count * sizeof(size_t); // for each element's size
+
+        // Move to the next type in the linked list
+        current = current->next;
+    }
+
+    return total_size;
+}
+
+void 
+complex_type_free(ComplexType* complex_type)
+{
 	while(complex_type != NULL) {
 		ComplexType* next = complex_type->prev;
 		Element* elements = complex_type->elements;
