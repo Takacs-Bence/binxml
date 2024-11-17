@@ -11,62 +11,79 @@
 #include "complex_type.h"
 #include "source_file_generator.h"
 
-typedef enum {
-    FILE_TYPE_H,
-    FILE_TYPE_C
+typedef enum
+{
+	FILE_TYPE_H,
+	FILE_TYPE_C
 } FileType;
 
-static void
-output_header_file(ComplexType* complex_type, FILE* output)
+static void output_header_file(ComplexType *complex_type, FILE *output)
 {
-	if (!output) {
+	if (!output)
+	{
 		perror("output file does not exist\n");
-		exit(1);		
+		exit(1);
 	}
-	
+
 	// first define the typedefs first, so the order does not matter in case of interdependencies
-	ComplexType* ct = complex_type;
-	while (ct != NULL) {
+	ComplexType *ct = complex_type;
+	while (ct != NULL)
+	{
 		fprintf(output, "typedef struct %s %s;\n", ct->name, ct->name);
-		
+
 		ct = ct->prev;
 	}
-	
+
 	// print one extra empty line to separate typedefs from structs
 	fprintf(output, "\n");
-	
+
 	// do the iteration again, now print the structs
 	ct = complex_type;
-	while (ct != NULL) {	
+	while (ct != NULL)
+	{
 
 		fprintf(output, "struct %s {\n", ct->name);
 
-		for (size_t i = 0; i < ct->element_count; ++i) {
+		for (size_t i = 0; i < ct->element_count; ++i)
+		{
 			Element element = ct->elements[i];
 
-			char* type;
+			char *type;
 
 			// handle predefined xsd types
-			if (strcmp(element.type, "xs:string") == 0) {
+			if (strcmp(element.type, "xs:string") == 0)
+			{
 				type = "char*";
-			} else if (strcmp(element.type, "xs:integer") == 0) {
+			}
+			else if (strcmp(element.type, "xs:integer") == 0)
+			{
 				type = "int";
-			} else if (strcmp(element.type, "xs:float") == 0) {
+			}
+			else if (strcmp(element.type, "xs:float") == 0)
+			{
 				type = "float";
-			} else if (strcmp(element.type, "xs:double") == 0) {
+			}
+			else if (strcmp(element.type, "xs:double") == 0)
+			{
 				type = "double";
-			} else if (strcmp(element.type, "xs:boolean") == 0) {
-				type = "int"; 
-			} else {
+			}
+			else if (strcmp(element.type, "xs:boolean") == 0)
+			{
+				type = "int";
+			}
+			else
+			{
 				type = NULL;
 			}
 
-			if (type != NULL) {
+			if (type != NULL)
+			{
 
 				// print predefined
 				fprintf(output, "\t%s %s;\n", type, element.name);
-
-			} else {
+			}
+			else
+			{
 				// handle complex types
 				size_t element_type_len = strlen(element.type);
 
@@ -81,14 +98,14 @@ output_header_file(ComplexType* complex_type, FILE* output)
 
 				// add the pointer type derived from complex type
 				char type_suffix[2] = "*";
-				type_len = strlen(type_suffix) + element_type_len + 1;			
+				type_len = strlen(type_suffix) + element_type_len + 1;
 				char type_val[type_len];
 				strncpy(type_val, element.type, type_len);
 				strlcat(type_val, type_suffix, type_len);
 
 				fprintf(output, "\t%s %s;\n", type_val, element.name);
 			}
-		}	
+		}
 
 		fprintf(output, "};\n\n");
 
@@ -101,47 +118,49 @@ output_header_file(ComplexType* complex_type, FILE* output)
 }
 
 /*
- * How encoding works: 
+ * How encoding works:
  * Given the complex type instance it goes th
- * 
-*/
+ *
+ */
 
-static char*
-encode_block(ComplexType* complex_type)
+static char *encode_block(ComplexType *complex_type)
 {
 	// Initial allocation with space for the initial string and null terminator
-    size_t initial_size = 128;
-    char* code_block = calloc(initial_size, sizeof(char));
-    if (code_block == NULL) {
-        perror("Failed to allocate memory");
-        exit(1);
-    }
+	size_t initial_size = 128;
+	char *code_block = calloc(initial_size, sizeof(char));
+	if (code_block == NULL)
+	{
+		perror("Failed to allocate memory");
+		exit(1);
+	}
 	// Starting content
-    snprintf(code_block, initial_size, "\treturn;\n");
+	snprintf(code_block, initial_size, "\treturn;\n");
 
-    // Example of appending more content dynamically
-    const char* additional_line = "\t// Encoding logic goes here\n";
-    size_t new_length = strlen(code_block) + strlen(additional_line) + 1;
-    if (new_length > initial_size) {
-        // Reallocate with a larger size and initialize new space with zero
-        char* temp = realloc(code_block, new_length);
-        if (temp == NULL) {
-            free(code_block);
-            perror("Failed to reallocate memory");
-            exit(1);
-        }
-        code_block = temp;
-        // No need to zero-initialize with `realloc` because it retains existing data
-    }
-    strcat(code_block, additional_line);
+	// Example of appending more content dynamically
+	const char *additional_line = "\t// Encoding logic goes here\n";
+	size_t new_length = strlen(code_block) + strlen(additional_line) + 1;
+	if (new_length > initial_size)
+	{
+		// Reallocate with a larger size and initialize new space with zero
+		char *temp = realloc(code_block, new_length);
+		if (temp == NULL)
+		{
+			free(code_block);
+			perror("Failed to reallocate memory");
+			exit(1);
+		}
+		code_block = temp;
+		// No need to zero-initialize with `realloc` because it retains existing data
+	}
+	strcat(code_block, additional_line);
 
-    return code_block;
+	return code_block;
 }
 
-static void 
-output_impl_file(ComplexType* complex_type, FILE* output) 
+static void output_impl_file(ComplexType *complex_type, FILE *output)
 {
-	if (!output) {
+	if (!output)
+	{
 		perror("output file does not exist\n");
 		exit(1);
 	}
@@ -151,9 +170,12 @@ output_impl_file(ComplexType* complex_type, FILE* output)
 	fprintf(output, "#include <stdio.h>\n");
 	fprintf(output, "#include \"Library_types.h\"\n\n");
 
-	// add encode function 
+	size_t header_size = complex_type_calc_header_size(complex_type);
+	fprintf(output, "#define\t\tHEADER_SIZE\t\t%zx\n\n", header_size);
+
+	// add encode function
 	fprintf(output, "void encode(const char* const xml_path, const char* const output_dir)\n");
-	char* encoded_block = encode_block(complex_type);
+	char *encoded_block = encode_block(complex_type);
 	fprintf(output, "{\n%s}\n\n", encoded_block);
 	free(encoded_block);
 
@@ -162,17 +184,17 @@ output_impl_file(ComplexType* complex_type, FILE* output)
 	fprintf(output, "{\n\treturn;\n}\n\n");
 }
 
-static ComplexType* 
-create_complex_type(const char* const xsd_path) 
+static ComplexType *create_complex_type(const char *const xsd_path)
 {
 	xmlDocPtr schema;
 	xmlNodePtr root, node;
 
-	ComplexType* complex_type = NULL;
+	ComplexType *complex_type = NULL;
 
 	schema = xmlReadFile(xsd_path, NULL, 0);
 
-	if (schema == NULL) {
+	if (schema == NULL)
+	{
 		printf("Failed to parse XSD file at path: %s\n", xsd_path);
 		exit(1);
 	}
@@ -180,31 +202,38 @@ create_complex_type(const char* const xsd_path)
 	// root is the schema
 	root = xmlDocGetRootElement(schema);
 
-	if (root == NULL) {
+	if (root == NULL)
+	{
 		perror("Schema is empty\n");
 		xmlFreeDoc(schema);
 		exit(1);
 	}
 
-	/* under schema there are elements and simple/complex types listed.	 
+	/* under schema there are elements and simple/complex types listed.
 	 * the elements either point to types or they contain embedded
 	 * only complexType is supported (not simpleType or simpleContent or complexContent) */
-	for (node = root->children; node != NULL; node = node->next) {
+	for (node = root->children; node != NULL; node = node->next)
+	{
 
 		// complex type declaration, that has a name by which it can be referenced throughout the XML
-		if (xmlStrcmp(node->name, (const xmlChar*)"complexType") == 0) {
+		if (xmlStrcmp(node->name, (const xmlChar *)"complexType") == 0)
+		{
 
 			complex_type = complex_type_create(complex_type, NULL, node);
 			// an element which can contain a complex type that only belongs to this element
-		} else if  (xmlStrcmp(node->name, (const xmlChar*)"element") == 0) {
+		}
+		else if (xmlStrcmp(node->name, (const xmlChar *)"element") == 0)
+		{
 			// there should be a complex type among the children
-			xmlNode* child = node->children;
+			xmlNode *child = node->children;
 
-			while (child != NULL) {
+			while (child != NULL)
+			{
 				// there are some extra 'text' elements, but find the complex type
-				if (xmlStrcmp(child->name, (const xmlChar*)"complexType") == 0) {
+				if (xmlStrcmp(child->name, (const xmlChar *)"complexType") == 0)
+				{
 					// complexType found, recursively append this type to the type defs
-					complex_type = complex_type_create(complex_type, (char*) node->name, child);	
+					complex_type = complex_type_create(complex_type, (char *)node->name, child);
 				}
 				child = child->next;
 			}
@@ -217,9 +246,8 @@ create_complex_type(const char* const xsd_path)
 /*
  * generates file name based on inputs and returns the file handle or exits program.
  * if the file already exists it will try and truncate its content.
-*/
-static FILE *
-create_file_handle(const char* const xsd_path, const char* const output_dir_path, FileType fileType)
+ */
+static FILE *create_file_handle(const char *const xsd_path, const char *const output_dir_path, FileType fileType)
 {
 	// check if output_dir_path is a valid directory
 	struct stat path_stat;
@@ -266,7 +294,7 @@ create_file_handle(const char* const xsd_path, const char* const output_dir_path
 
 	// get xsd file name length
 	size_t file_name_length = last_dot - last_slash;
-	const char* suffix = (fileType == FILE_TYPE_H) ?  "_types.h" : "_types.c";
+	const char *suffix = (fileType == FILE_TYPE_H) ? "_types.h" : "_types.c";
 	// check if the file name length fits in the generated_file_name
 	if (file_name_length <= 0 || sizeof(generated_file_name) <= (strlen(output_dir_path) + 1 + strlen(suffix) + sizeof(file_name_length)))
 	{
@@ -300,24 +328,26 @@ create_file_handle(const char* const xsd_path, const char* const output_dir_path
 	return file_handle;
 }
 
-void 
-generate_type_def_source_files(const char* const xsd_path, const char* const output_dir_path) 
+void generate_type_def_source_files(const char *const xsd_path, const char *const output_dir_path)
 {
 	// create object list and get root
-	ComplexType* complex_type = create_complex_type(xsd_path);
+	ComplexType *complex_type = create_complex_type(xsd_path);
 
 	// if output_dir is not specified, print to stdout
-	if (output_dir_path == NULL) {
+	if (output_dir_path == NULL)
+	{
 		output_header_file(complex_type, stdout);
 		output_impl_file(complex_type, stdout);
-	} else {
-		
-		FILE* file_handle_h = create_file_handle(xsd_path, output_dir_path, FILE_TYPE_H);
+	}
+	else
+	{
+
+		FILE *file_handle_h = create_file_handle(xsd_path, output_dir_path, FILE_TYPE_H);
 		// generate type defs to header file
 		output_header_file(complex_type, file_handle_h);
 		fclose(file_handle_h);
 
-		FILE* file_handle_c = create_file_handle(xsd_path, output_dir_path, FILE_TYPE_C);
+		FILE *file_handle_c = create_file_handle(xsd_path, output_dir_path, FILE_TYPE_C);
 		// generate c file implementing previously generated header file
 		output_impl_file(complex_type, file_handle_c);
 		fclose(file_handle_c);
@@ -326,4 +356,3 @@ generate_type_def_source_files(const char* const xsd_path, const char* const out
 	printf("C files has been generated from schema %s to directory %s\n", xsd_path, output_dir_path);
 	complex_type_free(complex_type);
 }
-
