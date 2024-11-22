@@ -21,6 +21,9 @@ typedef struct ComplexType
 	struct ComplexType *prev; 		// make it doubly linked list
 } ComplexType;
 
+
+ComplexType *create_complex_type(const char *const xsd_path);
+
 // complex_type - last element of the types linked list
 // name - only give name, if the complexType is buried under an element
 // - then it is likely it won't have a 'name' property and the param will be helpful generating the name

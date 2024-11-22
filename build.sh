@@ -2,4 +2,4 @@
 
 set -xe
 
-clang -o ./target/binxml src/*.c -lxml2
+clang -o ./target/binxml src/*.c -I./include -lxml2

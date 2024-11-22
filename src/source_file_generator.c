@@ -225,7 +225,7 @@ static void output_impl_file(ComplexType *complex_type, FILE *output)
 	fprintf(output, "{\n\treturn;\n}\n\n");
 }
 
-static ComplexType *create_complex_type(const char *const xsd_path)
+ComplexType *create_complex_type(const char *const xsd_path)
 {
 	xmlDocPtr schema;
 	xmlNodePtr root, node;
