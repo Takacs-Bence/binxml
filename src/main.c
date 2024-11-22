@@ -4,7 +4,6 @@
 #include "schema_validation.h"
 #include "source_file_generator.h"
 #include "util.h"
-#include "binxml_encode.h"
 
 int main(int argc, char **argv)
 {
@@ -66,8 +65,6 @@ int main(int argc, char **argv)
 
 		// will generate C header file with type to output dir based upon xsd_path if successful
 		generate_type_def_source_files(xsd_path, output_dir);
-
-		binxml_encode(xml_path, output_dir);
 	}
 	else if (str_case_cmp(command, "pack") == 0)
 	{
