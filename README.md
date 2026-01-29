@@ -3,6 +3,14 @@
 Binary XML serialization protocol that uses binary structure tables to encode/decode data, allowing faster processing and smaller files sizes. Supports random-access querying and modification of data. <br>
 Has a two-phase workflow, with protobuf-like compilation phase, where C files are being generated based on the XML schema. <br> 
 
+## Disclaimer
+<strong>binxml is not producion ready!</strong>
+The project is a work in progress and frankly in a very early stage. The initial scope has many limitations e.g. what parts of an XML schema is supported. <br>
+At this point if the XSD has complexTypes or/and elements with nested anonymous complexTypes in it, it is going to work. Other components like simpleType, simpleContext, complexContext  are not supported yet. <br>
+From an attribute point of view, attributes other than `name` and `type` are ignored.
+
+`binxml` is not an EXI (Efficient Extensible Interchange) or BiM (Binary XML) implementation at the moment.
+
 ## Advantages
 
 XML is a standardized, highly popular, widespread tool for stroring and transporting data. <br>
@@ -14,17 +22,19 @@ Dealing with huge files it can be too verbose because of its character encoding 
 The XML schema has to be available for both parties upfront. <br> 
 Comes with the usual problems of binary protocols, namely that if something does not function according to expectations, debugging not human readable formats are time consuming and hard. <br>
 
-## Disclaimer
-<strong>binxml is not producion ready!</strong>
-The project is a work in progress and the initial scope has many limitations e.g. what parts of an XML schema is supported. <br>
-At this point if the XSD has complexTypes or/and elements with nested anonymous complexTypes in it, it is going to work. Other components like simpleType, simpleContext, complexContext  are not supported yet. <br>
-From an attribute point of view, attributes other than `name` and `type` are ignored.
-
-`binxml` is not an EXI (Efficient Extensible Interchange) or BiM (Binary XML) implementation at the moment.
-
 ## How does it work?
 
-// TBD
+### Data serialization protocol
+
+A serialized data file has the following structure:
+
++--------------------+
+| FileHeader         |
++--------------------+
+| ElementDirectory[] |
++--------------------+
+| DataSection        |
++--------------------+
 
 ## Build and run
 
