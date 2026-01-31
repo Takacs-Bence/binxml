@@ -1,22 +1,22 @@
-#ifndef BIN_PROTOCOL.H
+#ifndef BIN_PROTOCOL_H
 #define BIN_PROTOCOL_H
 
 #include <stdio.h>
 
 typedef struct FileHeader {
-    unsigned short magic;        // 'BXML'
+    unsigned short magic;
     unsigned short version;      
     size_t elmnt_cnt;
     unsigned long dir_offset;   // where ElementDirectory starts
     unsigned long data_offset;  // where DataSection starts
-} file_header;
+} file_header_t;
 
 typedef struct ElementEntry {
     unsigned int name_hash;    // or string table index later
     unsigned char type_id;     // enum for xs:string, xs:int, etc
     unsigned long offset;      // offset into DataSection
     size_t size;               // size of stored data
-} elmnt_entry;
+} element_entry_t;
 
 
 #endif // BIN_PROTOCOL_H

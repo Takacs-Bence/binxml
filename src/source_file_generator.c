@@ -168,7 +168,7 @@ static void output_impl_file(ComplexType *complex_type, FILE *output)
 	fprintf(output, "#include \"Library_types.h\"\n\n");
 
 	size_t header_size = complex_type_calc_header_size(complex_type);
-	fprintf(output, "#define\t\tHEADER_SIZE\t\t%zx\n\n", header_size);
+	fprintf(output, "#define\t\tHEADER_SIZE\t\t%zu\n\n", header_size);
 
 	// add encode function
 	fprintf(output, "void encode(const char* const xml_path, const char* const output_dir)\n");
