@@ -42,7 +42,7 @@ static void calc_el_cnt(ComplexType *complex_type, file_header_t *file_header) {
 
 	ComplexType *iter = complex_type;
 
-	while (iter->next != NULL) {
+	while (iter != NULL) {
 		el_cnt += iter->element_count;
 		printf("calc el cnt: %zu\n", iter->element_count);
 		iter = iter->next;
@@ -67,12 +67,11 @@ static int serialize_complex_type(ComplexType *complex_type) {
 	file_header.data_offset = file_header.dir_offset + (file_header.elmnt_cnt * sizeof(element_entry_t));
 	printf("file header data section offset: %lu\n", file_header.data_offset);
 
+	// TODO write header to file
+
 	// offset is relative to data_offset not file start
 	unsigned long curr_offset = 0L;
 	size_t idx = 0;
-
-	//element_entry_t *el_entry = calloc(file_header.elmnt_cnt, sizeof(element_entry_t));
-	//if (el_entry == NULL) return -1;
 
 	element_entry_t element_entry;
 	memset(&element_entry, 0, sizeof(element_entry));
@@ -80,14 +79,18 @@ static int serialize_complex_type(ComplexType *complex_type) {
 	for (ComplexType *ct = complex_type; ct != NULL; ct = ct->next) {
     	for (size_t e = 0; e < ct->element_count; e++) {
 
-			//Element *el = ct->elements[e];
+			Element *el = &ct->elements[e];
+			size_t sz = el->size;
 
         	element_entry.offset = curr_offset;
-   	     	//curr_offset += sz;
+			element_entry.size = sz;
+
+			// TODO write entry to file
+			// TODO write data to file
+   	     	
+			curr_offset += sz;
    		}
 	}
-
-	//free(el_entry);
 
 	return 0;
 }
