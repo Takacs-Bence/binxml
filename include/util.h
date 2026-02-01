@@ -1,6 +1,8 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+#include <stdlib.h>
+
 // case insensitive string compare
 int str_case_cmp(const char *s1, const char *s2);
 

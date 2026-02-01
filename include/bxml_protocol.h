@@ -1,7 +1,8 @@
-#ifndef BIN_PROTOCOL_H
-#define BIN_PROTOCOL_H
+#ifndef BXML_PROTOCOL_H
+#define BXML_PROTOCOL_H
 
 #include <stdio.h>
+#include "bxml_types.h"
 
 typedef struct FileHeader {
     unsigned short magic;
@@ -13,10 +14,10 @@ typedef struct FileHeader {
 
 typedef struct ElementEntry {
     unsigned int name_hash;    // or string table index later
-    unsigned char type_id;     // enum for xs:string, xs:int, etc
+    type_id_t type_id;         // enum for xs:string, xs:int, etc
     unsigned long offset;      // offset into DataSection
     size_t size;               // size of stored data
 } element_entry_t;
 
 
-#endif // BIN_PROTOCOL_H
+#endif // BXML_PROTOCOL_H

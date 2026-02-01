@@ -17,7 +17,7 @@ typedef enum
 	FILE_TYPE_C
 } FileType;
 
-static void output_header_file(ComplexType *complex_type, FILE *output)
+static void output_header_file(complex_type_t *complex_type, FILE *output)
 {
 	if (!output)
 	{
@@ -26,7 +26,7 @@ static void output_header_file(ComplexType *complex_type, FILE *output)
 	}
 
 	// first define the typedefs first, so the order does not matter in case of interdependencies
-	ComplexType *ct = complex_type;
+	complex_type_t *ct = complex_type;
 	while (ct != NULL)
 	{
 		fprintf(output, "typedef struct %s %s;\n", ct->name, ct->name);
@@ -46,7 +46,7 @@ static void output_header_file(ComplexType *complex_type, FILE *output)
 
 		for (size_t i = 0; i < ct->element_count; ++i)
 		{
-			Element element = ct->elements[i];
+			ct_element_t element = ct->elements[i];
 
 			char *type;
 
@@ -120,7 +120,7 @@ static void output_header_file(ComplexType *complex_type, FILE *output)
 // creates the char* for the actual encoding logic creating the binary data structure
 // gets the complex_type linked list and the header size
 // will keep a track of the header and data section mark and keep an offset between them.
-static char *encode_block(ComplexType *complex_type, size_t header_size)
+static char *encode_block(complex_type_t *complex_type, size_t header_size)
 {
 	// Initial allocation with space for the initial string and null terminator
 	size_t initial_size = 128;
@@ -154,7 +154,7 @@ static char *encode_block(ComplexType *complex_type, size_t header_size)
 	return code_block;
 }
 
-static void output_impl_file(ComplexType *complex_type, FILE *output)
+static void output_impl_file(complex_type_t *complex_type, FILE *output)
 {
 	if (!output)
 	{
@@ -181,12 +181,12 @@ static void output_impl_file(ComplexType *complex_type, FILE *output)
 	fprintf(output, "{\n\treturn;\n}\n\n");
 }
 
-ComplexType *create_complex_type(const char *const xsd_path)
+complex_type_t *create_complex_type(const char *const xsd_path)
 {
 	xmlDocPtr schema;
 	xmlNodePtr root, node;
 
-	ComplexType *complex_type = NULL;
+	complex_type_t *complex_type = NULL;
 
 	schema = xmlReadFile(xsd_path, NULL, 0);
 
@@ -328,7 +328,7 @@ static FILE *create_file_handle(const char *const xsd_path, const char *const ou
 void generate_type_def_source_files(const char *const xsd_path, const char *const output_dir_path)
 {
 	// create object list and get root
-	ComplexType *complex_type = create_complex_type(xsd_path);
+	complex_type_t *complex_type = create_complex_type(xsd_path);
 
 	// if output_dir is not specified, print to stdout
 	if (output_dir_path == NULL)
