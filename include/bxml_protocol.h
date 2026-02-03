@@ -5,7 +5,7 @@
 #include "bxml_types.h"
 
 typedef struct FileHeader {
-    unsigned short magic;
+    unsigned int magic;
     unsigned short version;      
     size_t elmnt_cnt;
     unsigned long dir_offset;   // where ElementDirectory starts

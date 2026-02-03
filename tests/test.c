@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 #include "Library_types.h"
 #include "bxml_protocol.h"
 #include "complex_type.h"
@@ -44,18 +45,24 @@ static void calc_el_cnt(complex_type_t *complex_type, file_header_t *file_header
 
 	while (iter != NULL) {
 		el_cnt += iter->element_count;
-		printf("calc el cnt: %zu\n", iter->element_count);
 		iter = iter->next;
 	}
 
 	file_header->elmnt_cnt = el_cnt;
 }
 
-static int serialize_complex_type(complex_type_t *complex_type) {
+static int serialize_complex_type(complex_type_t *complex_type, const char* output_path) {
+
+	FILE *bin_file = fopen(output_path, "wb");
+	if (bin_file == NULL) {
+		printf("could not create file %s with err %s\n", output_path, strerror(errno));
+		return -1;
+	}
+
 	file_header_t file_header;
 	
-	file_header.magic = 0xfb;
-	file_header.version = 0x1;
+	file_header.magic = 0x42584D4C; // 'BXML'
+	file_header.version = 1;
 	printf("file header magic number: %hu\n", file_header.magic);
 	printf("file header version number: %hu\n", file_header.version);
 
@@ -67,7 +74,8 @@ static int serialize_complex_type(complex_type_t *complex_type) {
 	file_header.data_offset = file_header.dir_offset + (file_header.elmnt_cnt * sizeof(element_entry_t));
 	printf("file header data section offset: %lu\n", file_header.data_offset);
 
-	// TODO write header to file
+	// write header to file
+	fwrite(&file_header, sizeof(file_header), 1, bin_file);
 
 	// offset is relative to data_offset not file start
 	unsigned long curr_offset = 0L;
@@ -92,16 +100,19 @@ static int serialize_complex_type(complex_type_t *complex_type) {
    		}
 	}
 
+	if (fclose(bin_file) != 0) printf("could not close file %s with err %s\n", output_path, strerror(errno));
+
 	return 0;
 }
 
 int main()
 {
+	char *xml_path = "./data/Library.xml";
+	char *out_path = "./generated/bin/library_v1.bin";
 
 	complex_type_t *complex_type = create_complex_type("./data/Library.xsd");
 	printf("complex type %s\n", complex_type->name);
 
-	char *xml_path = "./data/Library.xml";
 	xmlDocPtr xml_doc = xmlReadFile(xml_path, NULL, 0);
 	if (xml_doc == NULL)
 	{
@@ -112,7 +123,7 @@ int main()
 	xmlNode *root = xmlDocGetRootElement(xml_doc);
 	parse_xml_node(root, complex_type);
 
-	if (serialize_complex_type(complex_type) == -1) {
+	if (serialize_complex_type(complex_type, out_path) == -1) {
 		printf("Failed to serialize complex type %s\n", complex_type->name);
 	}
 

@@ -11,7 +11,6 @@ typedef struct
 	char *name;	 					// name="MyElementType"
 	char *type;	 					// type-"xs:string" or xs:integer or complex/simpleType reference
 	size_t size; 					// size of the element in bytes TODO populate
-} Element;
 } ct_element_t;
 
 typedef struct complex_type_t
