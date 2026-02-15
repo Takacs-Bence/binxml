@@ -2,10 +2,10 @@
 
 #include "complex_type.h"
 
-complex_type_t *complex_type_create(complex_type_t *complex_type, const char *const name, xmlNodePtr complex_element)
+bxml_comp_t *complex_type_create(bxml_comp_t *complex_type, const char *const name, xmlNodePtr complex_element)
 {
 	// allocate mem for new type
-	complex_type_t *new_type = calloc(1, sizeof(complex_type_t));
+	bxml_comp_t *new_type = calloc(1, sizeof(bxml_comp_t));
 	if (new_type == NULL)
 	{
 		printf("could not allocate memmory for complex type definition");
@@ -72,7 +72,7 @@ complex_type_t *complex_type_create(complex_type_t *complex_type, const char *co
 			// create a dyanmic array for elements
 			size_t element_count = 0;
 			size_t elements_arr_size = ELEMENTS_INITIAL_CAPACITY;
-			ct_element_t *elements = calloc(elements_arr_size, sizeof(ct_element_t));
+			bxml_elem_t *elements = calloc(elements_arr_size, sizeof(bxml_elem_t));
 
 			new_type->elements = elements;
 
@@ -94,10 +94,10 @@ complex_type_t *complex_type_create(complex_type_t *complex_type, const char *co
 					// resize the element array if full
 					if (element_count >= elements_arr_size)
 					{
-						// double the size and reallocate memory
+						// double the data_size and reallocate memory
 						size_t old_size = elements_arr_size;
 						elements_arr_size = elements_arr_size * 2;
-						ct_element_t *new_elements = realloc(elements, elements_arr_size * sizeof(ct_element_t));
+						bxml_elem_t *new_elements = realloc(elements, elements_arr_size * sizeof(bxml_elem_t));
 
 						// have to update the pointer in the ComplexType because it was reassigned
 						new_type->elements = new_elements;
@@ -119,7 +119,7 @@ complex_type_t *complex_type_create(complex_type_t *complex_type, const char *co
 
 					// get the new element pointer and increment count
 					element_count++;
-					ct_element_t *new_element = &elements[element_count - 1];
+					bxml_elem_t *new_element = &elements[element_count - 1];
 
 					// a property represents an attribute
 					// property->name will be the name of the attribute
@@ -219,14 +219,14 @@ complex_type_t *complex_type_create(complex_type_t *complex_type, const char *co
 }
 
 // it returns the  n * 3 * sizeof(size_t) where n is the number of complex type definitions
-size_t complex_type_calc_header_size(complex_type_t *complex_type)
+size_t complex_type_calc_header_size(bxml_comp_t *complex_type)
 {
 	size_t total_size = 0;
 	// Traverse through the complex type linked list
-	complex_type_t *current = complex_type;
+	bxml_comp_t *current = complex_type;
 	while (current)
 	{
-		// one header component contains the offset where the start byte of the referenced type data, a count and a size of the type	
+		// one header component contains the offset where the start byte of the referenced type data, a count and a data_size of the type	
 		total_size += 3 * sizeof(size_t);
 		// Move to the next type in the linked list
 		current = current->next;
@@ -234,12 +234,12 @@ size_t complex_type_calc_header_size(complex_type_t *complex_type)
 	return total_size;
 }
 
-void complex_type_free(complex_type_t *complex_type)
+void complex_type_free(bxml_comp_t *complex_type)
 {
 	while (complex_type != NULL)
 	{
-		complex_type_t *next = complex_type->prev;
-		ct_element_t *elements = complex_type->elements;
+		bxml_comp_t *next = complex_type->prev;
+		bxml_elem_t *elements = complex_type->elements;
 		for (size_t count = 0; count < complex_type->element_count; count++)
 		{
 			free(elements[count].name);

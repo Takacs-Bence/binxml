@@ -5,13 +5,13 @@
 #include "bxml_protocol.h"
 #include "complex_type.h"
 
-static void parse_xml_node(xmlNode *node, complex_type_t *complex_type)
+static void parse_xml_node(xmlNode *node, bxml_comp_t *complex_type)
 {
 	while (node != NULL)
 	{
 		if (node->type == XML_ELEMENT_NODE)
 		{
-			printf("ct_element_t name: %s\n", node->name);
+			printf("bxml_elem_t name: %s\n", node->name);
 
 			// Match node name with schema
 			for (size_t i = 0; i < complex_type->element_count; i++)
@@ -38,10 +38,10 @@ static void parse_xml_node(xmlNode *node, complex_type_t *complex_type)
 	}
 }
 
-static void calc_el_cnt(complex_type_t *complex_type, file_header_t *file_header) {
+static void calc_el_cnt(bxml_comp_t *complex_type, file_header_t *file_header) {
 	size_t el_cnt = 0;
 
-	complex_type_t *iter = complex_type;
+	bxml_comp_t *iter = complex_type;
 
 	while (iter != NULL) {
 		el_cnt += iter->element_count;
@@ -51,7 +51,7 @@ static void calc_el_cnt(complex_type_t *complex_type, file_header_t *file_header
 	file_header->elmnt_cnt = el_cnt;
 }
 
-static int serialize_complex_type(complex_type_t *complex_type, const char* output_path) {
+static int serialize_complex_type(bxml_comp_t *complex_type, const char* output_path) {
 
 	FILE *bin_file = fopen(output_path, "wb");
 	if (bin_file == NULL) {
@@ -84,14 +84,14 @@ static int serialize_complex_type(complex_type_t *complex_type, const char* outp
 	element_entry_t element_entry;
 	memset(&element_entry, 0, sizeof(element_entry));
 
-	for (complex_type_t *ct = complex_type; ct != NULL; ct = ct->next) {
+	for (bxml_comp_t *ct = complex_type; ct != NULL; ct = ct->next) {
     	for (size_t e = 0; e < ct->element_count; e++) {
 
-			ct_element_t *el = &ct->elements[e];
-			size_t sz = el->size;
+			bxml_elem_t *el = &ct->elements[e];
+			size_t sz = el->data_size;
 
         	element_entry.offset = curr_offset;
-			element_entry.size = sz;
+			element_entry.data_size = sz;
 
 			// TODO write entry to file
 			// TODO write data to file
@@ -110,7 +110,7 @@ int main()
 	char *xml_path = "./data/Library.xml";
 	char *out_path = "./generated/bin/library_v1.bin";
 
-	complex_type_t *complex_type = create_complex_type("./data/Library.xsd");
+	bxml_comp_t *complex_type = create_complex_type("./data/Library.xsd");
 	printf("complex type %s\n", complex_type->name);
 
 	xmlDocPtr xml_doc = xmlReadFile(xml_path, NULL, 0);

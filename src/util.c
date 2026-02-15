@@ -41,8 +41,8 @@ void append(StringList *string_list, const char *string, size_t length)
 		return;
 	}
 
-	// incrementing on the list size
-	new_size = string_list->size + 1;
+	// incrementing on the list data_size
+	new_size = string_list->data_size + 1;
 	// reallocate the array inside the list
 	char **new_array = realloc(string_list->array, new_size * sizeof(char *));
 
@@ -53,7 +53,7 @@ void append(StringList *string_list, const char *string, size_t length)
 	}
 
 	// update the data inside string_list
-	string_list->size = new_size;
+	string_list->data_size = new_size;
 	string_list->array = new_array;
 
 	// copy string into the incremented array index
@@ -69,9 +69,9 @@ void free_list(StringList *string_list)
 		return;
 	}
 
-	size_t size = string_list->size;
+	size_t data_size = string_list->data_size;
 	// go through the char pointers and free them all
-	for (size_t i = 0; i < size; i++)
+	for (size_t i = 0; i < data_size; i++)
 	{
 		free(string_list->array[i]);
 	}
@@ -79,5 +79,5 @@ void free_list(StringList *string_list)
 	// take care of the freeing and resetting of struct values
 	free(string_list->array);
 	string_list->array = NULL;
-	string_list->size = 0;
+	string_list->data_size = 0;
 }

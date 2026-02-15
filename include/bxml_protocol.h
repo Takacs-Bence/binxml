@@ -16,7 +16,7 @@ typedef struct ElementEntry {
     unsigned int name_hash;    // or string table index later
     type_id_t type_id;         // enum for xs:string, xs:int, etc
     unsigned long offset;      // offset into DataSection
-    size_t size;               // size of stored data
+    size_t data_size;               // data_size of stored data
 } element_entry_t;
 
 

@@ -10,20 +10,21 @@ typedef struct
 {
 	char *name;	 					// name="MyElementType"
 	char *type;	 					// type-"xs:string" or xs:integer or complex/simpleType reference
-	size_t size; 					// size of the element in bytes TODO populate
-} ct_element_t;
+	size_t data_size; 				// data_size of the element in bytes
+	uint8_t data;					// data allocated on heap
+} bxml_elem_t;
 
-typedef struct complex_type_t
+typedef struct bxml_comp_t
 {
 	char *name; 					// name attribute of complexType e.g. ExampleType in <xs:complexType name="ExampleType">
-	ct_element_t *elements;
+	bxml_elem_t *elements;
 	size_t element_count;
-	struct complex_type_t *next; 		// linked list to get next type to process
-	struct complex_type_t *prev; 		// make it doubly linked list
-} complex_type_t;
+	struct bxml_comp_t *next; 		// linked list to get next type to process
+	struct bxml_comp_t *prev; 		// make it doubly linked list
+} bxml_comp_t;
 
 
-complex_type_t *create_complex_type(const char *const xsd_path);
+bxml_comp_t *create_complex_type(const char *const xsd_path);
 
 // complex_type - last element of the types linked list
 // name - only give name, if the complexType is buried under an element
@@ -32,15 +33,15 @@ complex_type_t *create_complex_type(const char *const xsd_path);
 //
 // recursively creates as many ComplexTypes as the element has, including embedded types
 //
-// returns the last created complex_type_t
+// returns the last created bxml_comp_t
 // no guarantee which type it will be in the doubly linked list
 // use complex_type_iterate_to_first_link to get the first element
-complex_type_t *complex_type_create(complex_type_t *complex_type, const char *const name, xmlNodePtr complex_element);
+bxml_comp_t *complex_type_create(bxml_comp_t *complex_type, const char *const name, xmlNodePtr complex_element);
 
 // returns the number of bytes this complex type tree will take to encode in a header section of the binary file
 // that will help to count the offsets for the data section on the binary file
-size_t complex_type_calc_header_size(complex_type_t *complex_type);
+size_t complex_type_calc_header_size(bxml_comp_t *complex_type);
 
-void complex_type_free(complex_type_t *complex_type);
+void complex_type_free(bxml_comp_t *complex_type);
 
 #endif // COMPLEX_TYPE_H

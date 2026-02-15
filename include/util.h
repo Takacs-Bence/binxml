@@ -12,7 +12,7 @@ int str_case_cmp(const char *s1, const char *s2);
 
 typedef struct {
 	char** array;
-	size_t size;
+	size_t data_size;
 } StringList;
 
 StringList* new_string_list();
