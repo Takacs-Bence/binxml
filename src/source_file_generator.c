@@ -17,6 +17,10 @@ typedef enum
 	FILE_TYPE_C
 } FileType;
 
+static int cp_lib_dep(const char *const output_dir_path) {
+	return system("cp ./include/bxml_lib.h ./generated/bxml_lib.h");
+}
+
 static void output_header_file(bxml_comp_t *complex_type, FILE *output)
 {
 	if (!output)
@@ -25,10 +29,12 @@ static void output_header_file(bxml_comp_t *complex_type, FILE *output)
 		exit(1);
 	}
 
+	fprintf(output, "#include \"bxml_lib.h\"\n\n");
+
 	// first define the typedefs first, so the order does not matter in case of interdependencies
 	bxml_comp_t *ct = complex_type;
-	while (ct != NULL)
-	{
+	
+	while (ct != NULL) {
 		fprintf(output, "typedef struct %s %s;\n", ct->name, ct->name);
 
 		ct = ct->prev;
@@ -78,7 +84,6 @@ static void output_header_file(bxml_comp_t *complex_type, FILE *output)
 
 			if (type != NULL)
 			{
-
 				// print predefined
 				fprintf(output, "\t%s %s;\n", type, element.name);
 			}
@@ -338,6 +343,11 @@ void generate_type_def_source_files(const char *const xsd_path, const char *cons
 	}
 	else
 	{
+		int cp_err = cp_lib_dep(output_dir_path);
+		if (cp_err) {
+			perror("dependency files could have not been copied to output directory\n");
+			exit(1);
+		}
 
 		FILE *file_handle_h = create_file_handle(xsd_path, output_dir_path, FILE_TYPE_H);
 		// generate type defs to header file

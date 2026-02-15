@@ -1,3 +1,5 @@
+#include "bxml_lib.h"
+
 typedef struct LibraryType LibraryType;
 typedef struct PublishingCompanyType PublishingCompanyType;
 typedef struct Books Books;
